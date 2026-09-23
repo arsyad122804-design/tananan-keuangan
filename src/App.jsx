@@ -90,6 +90,16 @@ export default function App() {
     }
   };
 
+  const handleToggleInvestorMode = () => {
+    if (!currentUser) return;
+    const nextInvestor = !isInvestor;
+    const updated = { ...currentUser, isInvestor: nextInvestor };
+    setCurrentUser(updated);
+    setCurrentSession(updated);
+    syncItemToSupabase('app_users', updated);
+    showTemporaryToast(`Mode diubah: ${nextInvestor ? '📈 Mode Investor (Saham Aktif)' : '💵 Mode Reguler (Non-Saham)'}`);
+  };
+
   // Check Supabase connection and initial sync on mount
   useEffect(() => {
     const initDatabase = async () => {
@@ -596,15 +606,21 @@ export default function App() {
                 <span className="text-xs font-bold text-white truncate block">
                   {currentUser.namaLengkap || currentUser.username}
                 </span>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded font-semibold inline-block mt-0.5 ${
-                  isMasterAdmin
-                    ? 'bg-amber-500/20 text-amber-300'
-                    : isInvestor
-                    ? 'bg-emerald-500/20 text-emerald-300'
-                    : 'bg-cyan-500/20 text-cyan-300'
-                }`}>
-                  {isMasterAdmin ? '👑 Master Admin' : isInvestor ? '📈 Investor' : '💵 Reguler'}
-                </span>
+                <button
+                  type="button"
+                  onClick={handleToggleInvestorMode}
+                  title="Klik untuk ganti mode Investor / Reguler"
+                  className={`text-[9px] px-2 py-0.5 rounded font-semibold inline-flex items-center gap-1 mt-0.5 transition hover:scale-105 cursor-pointer border ${
+                    isMasterAdmin
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                      : isInvestor
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                      : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+                  }`}
+                >
+                  <span>{isMasterAdmin ? '👑 Master' : ''}</span>
+                  <span>{isInvestor ? '📈 Mode Investor' : '💵 Mode Reguler'}</span>
+                </button>
               </div>
             </div>
 
@@ -746,9 +762,19 @@ export default function App() {
                 <h1 className="text-sm font-extrabold text-white leading-none truncate">TATANAN UANG</h1>
                 {isMasterAdmin && <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
               </div>
-              <span className="text-[9px] text-emerald-400 font-medium truncate block mt-0.5">
-                {currentUser.namaLengkap || currentUser.username} ({isInvestor ? 'Investor' : 'Reguler'})
-              </span>
+              <button
+                type="button"
+                onClick={handleToggleInvestorMode}
+                className={`text-[9px] px-2 py-0.5 rounded font-semibold inline-flex items-center gap-1 mt-0.5 border ${
+                  isInvestor
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                    : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+                }`}
+                title="Sentuh untuk ganti Mode Investor / Reguler"
+              >
+                <span>{currentUser.namaLengkap || currentUser.username}</span>
+                <span>({isInvestor ? '📈 Investor' : '💵 Reguler'})</span>
+              </button>
             </div>
           </div>
 
