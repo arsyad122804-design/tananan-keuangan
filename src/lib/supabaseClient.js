@@ -1,14 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Get credentials from localStorage first, fallback to Vite env variables
+const DEFAULT_SUPABASE_URL = 'https://dlpeewnkckobbvelnpxg.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscGVld25rY2tvYmJ2ZWxucHhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxMjQ0MjMsImV4cCI6MjEwNTcwMDQyM30.vdSFRLrQtzRq55yaBlA57I8pI6ipzbS0KmdoSzsP8FY';
+
+// Get credentials from localStorage first, fallback to Vite env variables or defaults
 export const getSupabaseConfig = () => {
   const localUrl = localStorage.getItem('tatanan_uang_supabase_url');
   const localKey = localStorage.getItem('tatanan_uang_supabase_anon_key');
 
-  const url = localUrl || import.meta.env.VITE_SUPABASE_URL || '';
-  const anonKey = localKey || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+  const url = localUrl || import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const anonKey = localKey || import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 
-  return { url: url.trim(), anonKey: anonKey.trim() };
+  return { url: (url || '').trim(), anonKey: (anonKey || '').trim() };
 };
 
 export const setSupabaseConfig = (url, anonKey) => {
