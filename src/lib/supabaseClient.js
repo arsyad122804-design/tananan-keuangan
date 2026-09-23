@@ -387,7 +387,7 @@ export const fetchAllFromSupabase = async () => {
 
   try {
     const [txRes, dreamRes, needRes] = await Promise.all([
-      client.from('transactions').select('*').order('tanggal', { ascending: false }),
+      client.from('transactions').select('*').order('tanggal', { ascending: false }).order('created_at', { ascending: false }),
       client.from('dreams').select('*').order('created_at', { ascending: true }),
       client.from('monthly_needs').select('*').order('created_at', { ascending: true })
     ]);

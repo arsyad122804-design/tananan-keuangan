@@ -43,6 +43,18 @@ const INITIAL_MONTHLY_NEEDS = [];
 const INITIAL_DREAMS = [];
 const INITIAL_TRANSACTIONS = [];
 
+export const sortTransactionsDesc = (list) => {
+  if (!Array.isArray(list)) return [];
+  return [...list].sort((a, b) => {
+    const dateA = new Date(a.tanggal).getTime();
+    const dateB = new Date(b.tanggal).getTime();
+    if (dateA !== dateB) return dateB - dateA;
+    const timeA = Number(a.id) || 0;
+    const timeB = Number(b.id) || 0;
+    return timeB - timeA;
+  });
+};
+
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => getCurrentSession());
 
@@ -51,7 +63,7 @@ export default function App() {
 
   const [transactions, setTransactions] = useState(() => {
     const saved = localStorage.getItem('tatanan_uang_transactions');
-    return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
+    return saved ? sortTransactionsDesc(JSON.parse(saved)) : INITIAL_TRANSACTIONS;
   });
 
   const [dreams, setDreams] = useState(() => {
@@ -112,7 +124,7 @@ export default function App() {
           try {
             const cloudData = await fetchAllFromSupabase();
             if (cloudData) {
-              setTransactions(cloudData.transactions || []);
+              setTransactions(sortTransactionsDesc(cloudData.transactions || []));
               setDreams(cloudData.dreams || []);
               setMonthlyNeeds(cloudData.monthlyNeeds || []);
             }
@@ -517,7 +529,7 @@ export default function App() {
         const cloudData = await fetchAllFromSupabase();
         if (cloudData) {
           if (cloudData.transactions && cloudData.transactions.length > 0) {
-            setTransactions(cloudData.transactions);
+            setTransactions(sortTransactionsDesc(cloudData.transactions));
           }
           if (cloudData.dreams && cloudData.dreams.length > 0) {
             setDreams(cloudData.dreams);
