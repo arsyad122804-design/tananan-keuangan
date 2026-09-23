@@ -60,19 +60,22 @@ export const getTodayISOString = () => {
 };
 
 export const formatHumanRupiah = (amount) => {
-  const num = Number(amount) || 0;
-  if (num === 0) return '';
+  const rawNum = Number(amount) || 0;
+  if (rawNum === 0) return '';
+  const isNeg = rawNum < 0;
+  const num = Math.abs(rawNum);
+  const prefix = isNeg ? '-' : '';
   if (num >= 1000000000) {
     const val = num / 1000000000;
-    return `${val % 1 === 0 ? val : val.toFixed(2)} Miliar`;
+    return `${prefix}${val % 1 === 0 ? val : val.toFixed(2)} Miliar`;
   }
   if (num >= 1000000) {
     const val = num / 1000000;
-    return `${val % 1 === 0 ? val : val.toFixed(2)} Juta`;
+    return `${prefix}${val % 1 === 0 ? val : val.toFixed(2)} Juta`;
   }
   if (num >= 1000) {
     const val = num / 1000;
-    return `${val % 1 === 0 ? val : val.toFixed(2)} Ribu`;
+    return `${prefix}${val % 1 === 0 ? val : val.toFixed(2)} Ribu`;
   }
   return '';
 };

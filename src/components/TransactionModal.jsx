@@ -90,14 +90,14 @@ export default function TransactionModal({
 
       // When income or expense is typed, automatically adjust Cash (Duit Dibawa)
       if (name === 'pemasukan' || name === 'pengeluaran') {
-        const calculatedCash = Math.max(0, baseCash + inc - exp);
+        const calculatedCash = baseCash + inc - exp;
         next.duitDibawa = String(calculatedCash);
         setManualOverrideCash(false);
       }
 
       // When profit or loss saham is typed, automatically adjust Stock (Duit di Saham)
       if (name === 'profitSaham' || name === 'lossSaham') {
-        const calculatedSaham = Math.max(0, baseSaham + prof - loss);
+        const calculatedSaham = baseSaham + prof - loss;
         next.duitSaham = String(calculatedSaham);
         setManualOverrideSaham(false);
       }
@@ -114,8 +114,8 @@ export default function TransactionModal({
 
     setFormData((prev) => ({
       ...prev,
-      duitDibawa: String(Math.max(0, baseCash + inc - exp)),
-      duitSaham: String(Math.max(0, baseSaham + prof - loss))
+      duitDibawa: String(baseCash + inc - exp),
+      duitSaham: String(baseSaham + prof - loss)
     }));
     setManualOverrideCash(false);
     setManualOverrideSaham(false);

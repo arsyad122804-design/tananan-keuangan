@@ -328,13 +328,12 @@ export default function App() {
     { totalPemasukan: 0, totalPengeluaran: 0, totalProfitSaham: 0, totalLossSaham: 0 }
   );
 
-  // Latest balance lookup (safely retrieve latest non-zero cash & stock)
-  const latestItemWithCash = transactions.find((t) => Number(t.duitDibawa) > 0) || transactions[0];
-  const latestItemWithSaham = transactions.find((t) => Number(t.duitSaham) > 0) || transactions[0];
+  // Latest balance lookup from the latest transaction snapshot
+  const latestItem = transactions.length > 0 ? transactions[0] : null;
 
-  const currentDuitDibawa = latestItemWithCash ? Number(latestItemWithCash.duitDibawa) || 0 : 0;
-  const currentDuitSaham = latestItemWithSaham ? Number(latestItemWithSaham.duitSaham) || 0 : 0;
-  const totalKekayaan = currentDuitDibawa + currentDuitSaham;
+  const currentDuitDibawa = latestItem && latestItem.duitDibawa !== undefined ? Number(latestItem.duitDibawa) || 0 : 0;
+  const currentDuitSaham = latestItem && latestItem.duitSaham !== undefined ? Number(latestItem.duitSaham) || 0 : 0;
+  const totalKekayaan = currentDuitDibawa + (isInvestor ? currentDuitSaham : 0);
 
   // Calculate monthly needs totals
   const totalKebutuhanNominal = monthlyNeeds.reduce((sum, n) => sum + (Number(n.nominal) || 0), 0);
