@@ -8,7 +8,8 @@ export default function TransactionModal({
   onSave,
   initialData,
   dreams = [],
-  currentBalances = {}
+  currentBalances = {},
+  isInvestor = true
 }) {
   const [formData, setFormData] = useState({
     tanggal: getTodayISOString(),
@@ -257,57 +258,60 @@ export default function TransactionModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Profit Saham */}
-            <div className="bg-slate-950/60 p-3.5 border border-slate-800 rounded-xl space-y-2">
-              <label className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">
-                📈 Profit Saham (Gain Rp)
-              </label>
-              <input
-                type="number"
-                name="profitSaham"
-                min="0"
-                placeholder="0 (Ketik nominal untung)"
-                value={formData.profitSaham}
-                onChange={handleChange}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500 text-sm"
-              />
-              {formData.profitSaham && Number(formData.profitSaham) > 0 && (
-                <div className="text-[11px] text-emerald-400 font-bold flex items-center gap-1">
-                  <span>Preview: +{formatRupiah(formData.profitSaham)}</span>
-                  {formatHumanRupiah(formData.profitSaham) && (
-                    <span className="text-amber-300">({formatHumanRupiah(formData.profitSaham)})</span>
-                  )}
-                </div>
-              )}
-            </div>
+          {/* Profit & Loss Saham (Hanya Investor) */}
+          {isInvestor && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Profit Saham */}
+              <div className="bg-slate-950/60 p-3.5 border border-slate-800 rounded-xl space-y-2">
+                <label className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">
+                  📈 Profit Saham (Gain Rp)
+                </label>
+                <input
+                  type="number"
+                  name="profitSaham"
+                  min="0"
+                  placeholder="0 (Ketik nominal untung)"
+                  value={formData.profitSaham}
+                  onChange={handleChange}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500 text-sm"
+                />
+                {formData.profitSaham && Number(formData.profitSaham) > 0 && (
+                  <div className="text-[11px] text-emerald-400 font-bold flex items-center gap-1">
+                    <span>Preview: +{formatRupiah(formData.profitSaham)}</span>
+                    {formatHumanRupiah(formData.profitSaham) && (
+                      <span className="text-amber-300">({formatHumanRupiah(formData.profitSaham)})</span>
+                    )}
+                  </div>
+                )}
+              </div>
 
-            {/* Loss Saham */}
-            <div className="bg-slate-950/60 p-3.5 border border-slate-800 rounded-xl space-y-2">
-              <label className="block text-xs font-semibold text-amber-400 uppercase tracking-wider">
-                📉 Loss Saham (Rugi Rp)
-              </label>
-              <input
-                type="number"
-                name="lossSaham"
-                min="0"
-                placeholder="0 (Ketik nominal rugi)"
-                value={formData.lossSaham}
-                onChange={handleChange}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-amber-500 text-sm"
-              />
-              {formData.lossSaham && Number(formData.lossSaham) > 0 && (
-                <div className="text-[11px] text-amber-400 font-bold flex items-center gap-1">
-                  <span>Preview: -{formatRupiah(formData.lossSaham)}</span>
-                  {formatHumanRupiah(formData.lossSaham) && (
-                    <span className="text-amber-300">({formatHumanRupiah(formData.lossSaham)})</span>
-                  )}
-                </div>
-              )}
+              {/* Loss Saham */}
+              <div className="bg-slate-950/60 p-3.5 border border-slate-800 rounded-xl space-y-2">
+                <label className="block text-xs font-semibold text-amber-400 uppercase tracking-wider">
+                  📉 Loss Saham (Rugi Rp)
+                </label>
+                <input
+                  type="number"
+                  name="lossSaham"
+                  min="0"
+                  placeholder="0 (Ketik nominal rugi)"
+                  value={formData.lossSaham}
+                  onChange={handleChange}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-amber-500 text-sm"
+                />
+                {formData.lossSaham && Number(formData.lossSaham) > 0 && (
+                  <div className="text-[11px] text-amber-400 font-bold flex items-center gap-1">
+                    <span>Preview: -{formatRupiah(formData.lossSaham)}</span>
+                    {formatHumanRupiah(formData.lossSaham) && (
+                      <span className="text-amber-300">({formatHumanRupiah(formData.lossSaham)})</span>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-800 pt-4">
+          <div className={`grid grid-cols-1 ${isInvestor ? 'sm:grid-cols-2' : ''} gap-4 border-t border-slate-800 pt-4`}>
             {/* Total Duit Yang Saya Bawa */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
@@ -332,43 +336,45 @@ export default function TransactionModal({
               )}
             </div>
 
-            {/* Duit Di Saham */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                <PieChart className="w-4 h-4 text-blue-400" />
-                Nilai Duit di Saham (Portofolio Rp)
-              </label>
-              <input
-                type="number"
-                name="duitSaham"
-                placeholder="Ketik total saham (cth: 15000000)"
-                value={formData.duitSaham}
-                onChange={handleChange}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-white font-mono focus:outline-none focus:border-blue-500 transition text-sm"
-              />
-              {formData.duitSaham && Number(formData.duitSaham) > 0 && (
-                <div className="text-[11px] text-blue-400 font-bold mt-1 flex items-center gap-1">
-                  <span>Portofolio Saham: {formatRupiah(formData.duitSaham)}</span>
-                  {formatHumanRupiah(formData.duitSaham) && (
-                    <span className="text-amber-300">({formatHumanRupiah(formData.duitSaham)})</span>
-                  )}
-                </div>
-              )}
-            </div>
+            {/* Duit Di Saham (Hanya Investor) */}
+            {isInvestor && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <PieChart className="w-4 h-4 text-blue-400" />
+                  Nilai Duit di Saham (Portofolio Rp)
+                </label>
+                <input
+                  type="number"
+                  name="duitSaham"
+                  placeholder="Ketik total saham (cth: 15000000)"
+                  value={formData.duitSaham}
+                  onChange={handleChange}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-white font-mono focus:outline-none focus:border-blue-500 transition text-sm"
+                />
+                {formData.duitSaham && Number(formData.duitSaham) > 0 && (
+                  <div className="text-[11px] text-blue-400 font-bold mt-1 flex items-center gap-1">
+                    <span>Portofolio Saham: {formatRupiah(formData.duitSaham)}</span>
+                    {formatHumanRupiah(formData.duitSaham) && (
+                      <span className="text-amber-300">({formatHumanRupiah(formData.duitSaham)})</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Live Total Seluruh Kekayaan Banner */}
           <div className="bg-gradient-to-r from-emerald-950/70 via-slate-950 to-teal-950/70 border border-emerald-500/40 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-2 text-xs">
             <span className="text-slate-300 font-medium">
-              Total Seluruh Aset Kekayaan (Cash + Saham):
+              {isInvestor ? 'Total Seluruh Aset Kekayaan (Cash + Saham):' : 'Total Saldo Kas:'}
             </span>
             <div className="flex items-center gap-1.5">
               <span className="text-base font-extrabold text-emerald-400 font-mono">
-                {formatRupiah(calculatedTotalKekayaan)}
+                {formatRupiah(isInvestor ? calculatedTotalKekayaan : calculatedCash)}
               </span>
-              {formatHumanRupiah(calculatedTotalKekayaan) && (
+              {formatHumanRupiah(isInvestor ? calculatedTotalKekayaan : calculatedCash) && (
                 <span className="text-xs text-amber-300 font-bold">
-                  ({formatHumanRupiah(calculatedTotalKekayaan)})
+                  ({formatHumanRupiah(isInvestor ? calculatedTotalKekayaan : calculatedCash)})
                 </span>
               )}
             </div>

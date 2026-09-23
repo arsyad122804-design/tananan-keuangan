@@ -2,14 +2,14 @@ import React from 'react';
 import { Wallet, TrendingUp, TrendingDown, DollarSign, ArrowUpRight, ArrowDownRight, PieChart, Target, Coins } from 'lucide-react';
 import { formatRupiah } from '../utils/formatters';
 
-export default function StatCards({ summary }) {
+export default function StatCards({ summary, isInvestor = true }) {
   const netStockProfit = summary.totalProfitSaham - summary.totalLossSaham;
   const netCashflow = summary.totalPemasukan - summary.totalPengeluaran;
   const dreamSaved = summary.totalDreamTerkumpul || 0;
   const dreamTarget = summary.totalDreamTarget || 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-6">
+    <div className={`grid grid-cols-1 md:grid-cols-2 ${isInvestor ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 my-6`}>
       {/* 1. Total Duit yang Dibawa */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-emerald-500/50 transition-all">
         <div className="flex items-center justify-between">
@@ -26,21 +26,23 @@ export default function StatCards({ summary }) {
         </div>
       </div>
 
-      {/* 2. Duit di Saham */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-blue-500/50 transition-all">
-        <div className="flex items-center justify-between">
-          <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Duit di Saham</span>
-          <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 group-hover:scale-110 transition-transform">
-            <PieChart className="w-5 h-5" />
+      {/* 2. Duit di Saham (Hanya untuk Investor) */}
+      {isInvestor && (
+        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-blue-500/50 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Duit di Saham</span>
+            <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 group-hover:scale-110 transition-transform">
+              <PieChart className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <h3 className="text-2xl font-bold text-blue-400 tracking-tight font-mono">
+              {formatRupiah(summary.duitSaham)}
+            </h3>
+            <p className="text-xs text-slate-400 mt-1">Modal / Portofolio pasar saham</p>
           </div>
         </div>
-        <div className="mt-3">
-          <h3 className="text-2xl font-bold text-blue-400 tracking-tight font-mono">
-            {formatRupiah(summary.duitSaham)}
-          </h3>
-          <p className="text-xs text-slate-400 mt-1">Modal / Portofolio pasar saham</p>
-        </div>
-      </div>
+      )}
 
       {/* 3. Total Kekayaan */}
       <div className="bg-slate-900/90 border border-emerald-500/40 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-emerald-500 transition-all bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/30">
@@ -52,30 +54,34 @@ export default function StatCards({ summary }) {
         </div>
         <div className="mt-3">
           <h3 className="text-2xl font-extrabold text-emerald-300 tracking-tight font-mono">
-            {formatRupiah(summary.totalKekayaan)}
+            {formatRupiah(isInvestor ? summary.totalKekayaan : summary.duitDibawa)}
           </h3>
-          <p className="text-xs text-emerald-400/80 mt-1 font-medium">(Cash + Duit di Saham)</p>
+          <p className="text-xs text-emerald-400/80 mt-1 font-medium">
+            {isInvestor ? '(Cash + Duit di Saham)' : '(Total Saldo Kas)'}
+          </p>
         </div>
       </div>
 
-      {/* 4. Net Profit/Loss Saham */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-amber-500/50 transition-all">
-        <div className="flex items-center justify-between">
-          <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Performa Saham (Net)</span>
-          <div className={`p-2.5 rounded-xl ${netStockProfit >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-            {netStockProfit >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+      {/* 4. Net Profit/Loss Saham (Hanya untuk Investor) */}
+      {isInvestor && (
+        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-amber-500/50 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Performa Saham (Net)</span>
+            <div className={`p-2.5 rounded-xl ${netStockProfit >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+              {netStockProfit >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+            </div>
+          </div>
+          <div className="mt-3">
+            <h3 className={`text-2xl font-bold tracking-tight font-mono ${netStockProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {netStockProfit >= 0 ? '+' : ''}{formatRupiah(netStockProfit)}
+            </h3>
+            <div className="flex items-center gap-2 text-[11px] mt-1 text-slate-400 font-mono">
+              <span className="text-emerald-400">Gain: +{formatRupiah(summary.totalProfitSaham)}</span>
+              <span className="text-red-400">Loss: -{formatRupiah(summary.totalLossSaham)}</span>
+            </div>
           </div>
         </div>
-        <div className="mt-3">
-          <h3 className={`text-2xl font-bold tracking-tight font-mono ${netStockProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-            {netStockProfit >= 0 ? '+' : ''}{formatRupiah(netStockProfit)}
-          </h3>
-          <div className="flex items-center gap-2 text-[11px] mt-1 text-slate-400 font-mono">
-            <span className="text-emerald-400">Gain: +{formatRupiah(summary.totalProfitSaham)}</span>
-            <span className="text-red-400">Loss: -{formatRupiah(summary.totalLossSaham)}</span>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* 5. Total Pemasukan */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden">

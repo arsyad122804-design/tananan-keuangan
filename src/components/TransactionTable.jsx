@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Edit2, Trash2, Search, Filter, Plus, ArrowUpDown, Calendar, ShoppingBag, Wallet, PieChart, LayoutGrid, Table as TableIcon } from 'lucide-react';
 import { formatRupiah, formatDateFull } from '../utils/formatters';
 
-export default function TransactionTable({ transactions, onEdit, onDelete, onAddNew }) {
+export default function TransactionTable({ transactions, onEdit, onDelete, onAddNew, isInvestor = true }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMonth, setFilterMonth] = useState('ALL');
   const [sortAsc, setSortAsc] = useState(false);
@@ -43,9 +43,9 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onAdd
       {/* Table Header Controls */}
       <div className="p-4 sm:p-5 border-b border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h3 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+          <h3 className="text-lg sm:text-xl font-bold text-white flex flex-wrap items-center gap-2">
             <span>Catatan Keuangan & Saham</span>
-            <span className="text-xs bg-slate-800 text-emerald-400 px-2.5 py-0.5 rounded-full border border-slate-700 font-mono">
+            <span className="text-xs bg-slate-800 text-emerald-400 px-2.5 py-0.5 rounded-full border border-slate-700 font-mono whitespace-nowrap shrink-0 inline-flex items-center">
               {sorted.length} Data
             </span>
           </h3>
@@ -149,7 +149,7 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onAdd
               </div>
 
               {/* Card Metrics Grid */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className={`grid ${isInvestor ? 'grid-cols-2' : 'grid-cols-2'} gap-2 text-xs`}>
                 {/* Pemasukan */}
                 <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800/60">
                   <span className="text-[10px] text-slate-400 block">Pemasukan</span>
@@ -166,27 +166,31 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onAdd
                   </span>
                 </div>
 
-                {/* Profit Saham */}
-                <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800/60">
-                  <span className="text-[10px] text-slate-400 block">Profit Saham</span>
-                  <span className="font-mono font-bold text-emerald-400">
-                    {item.profitSaham > 0 ? formatRupiah(item.profitSaham) : '-'}
-                  </span>
-                </div>
+                {/* Profit Saham (Hanya Investor) */}
+                {isInvestor && (
+                  <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800/60">
+                    <span className="text-[10px] text-slate-400 block">Profit Saham</span>
+                    <span className="font-mono font-bold text-emerald-400">
+                      {item.profitSaham > 0 ? formatRupiah(item.profitSaham) : '-'}
+                    </span>
+                  </div>
+                )}
 
-                {/* Loss Saham */}
-                <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800/60">
-                  <span className="text-[10px] text-slate-400 block">Loss Saham</span>
-                  <span className="font-mono font-bold text-amber-400">
-                    {item.lossSaham > 0 ? formatRupiah(item.lossSaham) : '-'}
-                  </span>
-                </div>
+                {/* Loss Saham (Hanya Investor) */}
+                {isInvestor && (
+                  <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800/60">
+                    <span className="text-[10px] text-slate-400 block">Loss Saham</span>
+                    <span className="font-mono font-bold text-amber-400">
+                      {item.lossSaham > 0 ? formatRupiah(item.lossSaham) : '-'}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Card Balances */}
               <div className="flex items-center justify-between pt-1 text-[11px] font-mono text-slate-400 border-t border-slate-800/60">
-                <span className="text-blue-300">Cash: {formatRupiah(item.duitDibawa)}</span>
-                <span className="text-purple-300">Saham: {formatRupiah(item.duitSaham)}</span>
+                <span className="text-blue-300">Duit Dibawa: {formatRupiah(item.duitDibawa)}</span>
+                {isInvestor && <span className="text-purple-300">Saham: {formatRupiah(item.duitSaham)}</span>}
               </div>
             </div>
           ))
@@ -198,19 +202,23 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onAdd
             <span className="text-xs font-bold text-emerald-400 block uppercase tracking-wider">
               TOTAL AKUMULASI:
             </span>
-            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+            <div className={`grid ${isInvestor ? 'grid-cols-2' : 'grid-cols-2'} gap-2 text-xs font-mono`}>
               <div className="bg-slate-900 p-2 rounded-lg text-emerald-400">
                 In: {totals.pemasukan > 0 ? formatRupiah(totals.pemasukan) : '-'}
               </div>
               <div className="bg-slate-900 p-2 rounded-lg text-red-400">
                 Out: {totals.pengeluaran > 0 ? formatRupiah(totals.pengeluaran) : '-'}
               </div>
-              <div className="bg-slate-900 p-2 rounded-lg text-emerald-400">
-                Gain: {totals.profitSaham > 0 ? formatRupiah(totals.profitSaham) : '-'}
-              </div>
-              <div className="bg-slate-900 p-2 rounded-lg text-amber-400">
-                Loss: {totals.lossSaham > 0 ? formatRupiah(totals.lossSaham) : '-'}
-              </div>
+              {isInvestor && (
+                <>
+                  <div className="bg-slate-900 p-2 rounded-lg text-emerald-400">
+                    Gain: {totals.profitSaham > 0 ? formatRupiah(totals.profitSaham) : '-'}
+                  </div>
+                  <div className="bg-slate-900 p-2 rounded-lg text-amber-400">
+                    Loss: {totals.lossSaham > 0 ? formatRupiah(totals.lossSaham) : '-'}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -226,10 +234,10 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onAdd
               <th className="px-4 py-3.5 text-center min-w-[200px]">Isi Kebutuhan</th>
               <th className="px-4 py-3.5 text-center text-emerald-400 min-w-[120px]">Pemasukan</th>
               <th className="px-4 py-3.5 text-center text-red-400 min-w-[120px]">Pengeluaran</th>
-              <th className="px-4 py-3.5 text-center text-emerald-400 min-w-[120px]">Profit Saham</th>
-              <th className="px-4 py-3.5 text-center text-amber-400 min-w-[120px]">Loss Saham</th>
+              {isInvestor && <th className="px-4 py-3.5 text-center text-emerald-400 min-w-[120px]">Profit Saham</th>}
+              {isInvestor && <th className="px-4 py-3.5 text-center text-amber-400 min-w-[120px]">Loss Saham</th>}
               <th className="px-4 py-3.5 text-center text-blue-400 min-w-[140px]">Duit Dibawa</th>
-              <th className="px-4 py-3.5 text-center text-purple-400 min-w-[140px]">Duit di Saham</th>
+              {isInvestor && <th className="px-4 py-3.5 text-center text-purple-400 min-w-[140px]">Duit di Saham</th>}
               <th className="px-4 py-3.5 text-center min-w-[100px]">Aksi</th>
             </tr>
           </thead>
@@ -261,18 +269,24 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onAdd
                   <td className="px-4 py-3 text-center font-mono text-red-400 font-medium whitespace-nowrap">
                     {item.pengeluaran > 0 ? formatRupiah(item.pengeluaran) : '-'}
                   </td>
-                  <td className="px-4 py-3 text-center font-mono text-emerald-400 whitespace-nowrap">
-                    {item.profitSaham > 0 ? formatRupiah(item.profitSaham) : '-'}
-                  </td>
-                  <td className="px-4 py-3 text-center font-mono text-amber-400 whitespace-nowrap">
-                    {item.lossSaham > 0 ? formatRupiah(item.lossSaham) : '-'}
-                  </td>
+                  {isInvestor && (
+                    <td className="px-4 py-3 text-center font-mono text-emerald-400 whitespace-nowrap">
+                      {item.profitSaham > 0 ? formatRupiah(item.profitSaham) : '-'}
+                    </td>
+                  )}
+                  {isInvestor && (
+                    <td className="px-4 py-3 text-center font-mono text-amber-400 whitespace-nowrap">
+                      {item.lossSaham > 0 ? formatRupiah(item.lossSaham) : '-'}
+                    </td>
+                  )}
                   <td className="px-4 py-3 text-center font-mono text-blue-300 whitespace-nowrap">
                     {formatRupiah(item.duitDibawa)}
                   </td>
-                  <td className="px-4 py-3 text-center font-mono text-purple-300 whitespace-nowrap">
-                    {formatRupiah(item.duitSaham)}
-                  </td>
+                  {isInvestor && (
+                    <td className="px-4 py-3 text-center font-mono text-purple-300 whitespace-nowrap">
+                      {formatRupiah(item.duitSaham)}
+                    </td>
+                  )}
                   <td className="px-4 py-3 text-center whitespace-nowrap">
                     <div className="flex items-center justify-center gap-1">
                       <button
@@ -309,13 +323,17 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onAdd
                 <td className="px-4 py-4 text-center font-mono text-red-400 text-sm">
                   {totals.pengeluaran > 0 ? formatRupiah(totals.pengeluaran) : '-'}
                 </td>
-                <td className="px-4 py-4 text-center font-mono text-emerald-400 text-sm">
-                  {totals.profitSaham > 0 ? formatRupiah(totals.profitSaham) : '-'}
-                </td>
-                <td className="px-4 py-4 text-center font-mono text-amber-400 text-sm">
-                  {totals.lossSaham > 0 ? formatRupiah(totals.lossSaham) : '-'}
-                </td>
-                <td colSpan="3" className="px-4 py-4 text-center text-slate-500 font-normal italic">
+                {isInvestor && (
+                  <td className="px-4 py-4 text-center font-mono text-emerald-400 text-sm">
+                    {totals.profitSaham > 0 ? formatRupiah(totals.profitSaham) : '-'}
+                  </td>
+                )}
+                {isInvestor && (
+                  <td className="px-4 py-4 text-center font-mono text-amber-400 text-sm">
+                    {totals.lossSaham > 0 ? formatRupiah(totals.lossSaham) : '-'}
+                  </td>
+                )}
+                <td colSpan={isInvestor ? 3 : 2} className="px-4 py-4 text-center text-slate-500 font-normal italic">
                   *Total terhitung sesuai filter tabel
                 </td>
               </tr>

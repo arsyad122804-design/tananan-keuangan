@@ -7,6 +7,7 @@ export default function DreamTracker({
   totalKekayaan = 0,
   currentDuitDibawa = 0,
   currentDuitSaham = 0,
+  totalKebutuhanTerbayar = 0,
   onToggleComplete,
   onEdit,
   onDelete,
@@ -24,8 +25,8 @@ export default function DreamTracker({
     .filter((item) => item.isCompleted)
     .reduce((sum, item) => sum + (Number(item.targetBiaya) || 0), 0);
 
-  // 3. Sisa Dana Keseluruhan yang tersedia (otomatis berkurang saat impian dicentang/ceklis)
-  const netSisaDanaKeseluruhan = Math.max(0, totalKekayaanVal - completedTarget);
+  // 3. Sisa Dana Keseluruhan yang tersedia (dikurangi impian selesai & kebutuhan bulanan terbayar)
+  const netSisaDanaKeseluruhan = Math.max(0, totalKekayaanVal - completedTarget - Number(totalKebutuhanTerbayar || 0));
   let activeWealthPool = netSisaDanaKeseluruhan;
 
   const processedDreams = dreams.map((item, index) => {
@@ -84,20 +85,22 @@ export default function DreamTracker({
           </div>
           <div>
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
-              Dana Keseluruhan Sisa (Setelah Ceklis)
+              Dana Keseluruhan Sisa (Setelah Kebutuhan & Impian)
             </span>
             <div className="flex flex-wrap items-baseline gap-2 mt-0.5">
               <span className="text-2xl font-extrabold text-emerald-400 font-mono">
                 {formatRupiah(netSisaDanaKeseluruhan)}
               </span>
               <span className="text-xs text-slate-400 font-mono bg-slate-900/90 px-2.5 py-1 rounded-md border border-slate-800">
-                Total Aset: <strong className="text-emerald-300">{formatRupiah(totalKekayaanVal)}</strong> {completedTarget > 0 && <span className="text-amber-400">(-{formatRupiah(completedTarget)} Ceklis)</span>}
+                Total Aset: <strong className="text-emerald-300">{formatRupiah(totalKekayaanVal)}</strong>
+                {totalKebutuhanTerbayar > 0 && <span className="text-cyan-300 ml-1">(-{formatRupiah(totalKebutuhanTerbayar)} Kebutuhan)</span>}
+                {completedTarget > 0 && <span className="text-amber-400 ml-1">(-{formatRupiah(completedTarget)} Ceklis)</span>}
               </span>
             </div>
           </div>
         </div>
         <div className="text-xs text-slate-300 bg-slate-900/90 px-3.5 py-2.5 rounded-xl border border-slate-800 max-w-lg leading-relaxed">
-          💡 Saat impian dicentang (Ceklis), nominalnya berkurang dari Dana Keseluruhan dan **sisa {formatRupiah(netSisaDanaKeseluruhan)}** langsung mengalir ke impian berjalan berikutnya.
+          💡 Dana yang mengalir ke Target Impian adalah **Sisa Bersih ({formatRupiah(netSisaDanaKeseluruhan)})** setelah dikurangi kebutuhan bulanan terbayar dan impian selesai.
         </div>
       </div>
 
@@ -108,9 +111,9 @@ export default function DreamTracker({
             <Target className="w-4 h-4 animate-bounce" />
             <span>Target & Impian Keuangan Masa Depan</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-white flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-white flex flex-wrap items-center gap-2">
             <span>Daftar Impian Saya</span>
-            <span className="text-xs bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-500/30">
+            <span className="text-xs bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-500/30 whitespace-nowrap shrink-0 inline-flex items-center font-mono">
               {completedCount}/{dreams.length} Tercapai
             </span>
           </h2>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, List, PlusCircle, Target, FileSpreadsheet, Download } from 'lucide-react';
+import { List, ShoppingBag, PlusCircle, Target, FileSpreadsheet, Download } from 'lucide-react';
 
 export default function MobileBottomNav({ activeTab, setActiveTab, onAddNew, onExportExcel, onOpenInstall }) {
   return (
@@ -19,6 +19,29 @@ export default function MobileBottomNav({ activeTab, setActiveTab, onAddNew, onE
           <span>Catatan</span>
         </button>
 
+        {/* Layer 3: Kebutuhan Bulanan 🛍️ */}
+        <button
+          onClick={() => {
+            setActiveTab('KEBUTUHAN');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className={`flex flex-col items-center gap-1 text-[10px] font-medium transition ${
+            activeTab === 'KEBUTUHAN' ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <ShoppingBag className="w-5 h-5 text-cyan-400" />
+          <span>Kebutuhan</span>
+        </button>
+
+        {/* + Tambah Data (Main Action Button) */}
+        <button
+          onClick={onAddNew}
+          className="flex flex-col items-center justify-center -mt-6 bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 rounded-full w-12 h-12 p-2.5 shadow-lg shadow-emerald-500/30 hover:scale-110 active:scale-95 transition shrink-0"
+          title="Tambah Data Baru"
+        >
+          <PlusCircle className="w-6 h-6 stroke-[2.5]" />
+        </button>
+
         {/* Layer 2: Target Impian 🎯 */}
         <button
           onClick={() => {
@@ -29,17 +52,8 @@ export default function MobileBottomNav({ activeTab, setActiveTab, onAddNew, onE
             activeTab === 'IMPIAN' ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Target className="w-5 h-5 text-amber-400 animate-pulse" />
+          <Target className="w-5 h-5 text-amber-400" />
           <span>Impian</span>
-        </button>
-
-        {/* + Tambah Data (Main Action Button) */}
-        <button
-          onClick={onAddNew}
-          className="flex flex-col items-center justify-center -mt-6 bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 rounded-full w-13 h-13 p-3 shadow-lg shadow-emerald-500/30 hover:scale-110 active:scale-95 transition"
-          title="Tambah Catatan Baru"
-        >
-          <PlusCircle className="w-7 h-7 stroke-[2.5]" />
         </button>
 
         {/* Ekspor Excel */}
@@ -49,15 +63,6 @@ export default function MobileBottomNav({ activeTab, setActiveTab, onAddNew, onE
         >
           <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
           <span>Excel</span>
-        </button>
-
-        {/* Install App */}
-        <button
-          onClick={onOpenInstall}
-          className="flex flex-col items-center gap-1 text-slate-400 hover:text-teal-400 text-[10px] font-medium transition"
-        >
-          <Download className="w-5 h-5 text-teal-400" />
-          <span>Install</span>
         </button>
       </div>
     </div>
