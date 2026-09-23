@@ -56,13 +56,14 @@ export default function MobileBottomNav({ activeTab, setActiveTab, onAddNew, onE
           <span>Impian</span>
         </button>
 
-        {/* Ekspor Excel */}
+        {/* Download Aplikasi (PWA Install) */}
         <button
-          onClick={onExportExcel}
-          className="flex flex-col items-center gap-1 text-slate-400 hover:text-emerald-400 text-[10px] font-medium transition"
+          onClick={onOpenInstall}
+          className="flex flex-col items-center gap-1 text-slate-400 hover:text-emerald-400 text-[10px] font-medium transition group"
+          title="Download Aplikasi"
         >
-          <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
-          <span>Excel</span>
+          <Download className="w-5 h-5 text-teal-400 group-hover:scale-110 transition-transform" />
+          <span>Download</span>
         </button>
       </div>
     </div>
