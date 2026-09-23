@@ -354,7 +354,8 @@ export default function App() {
   );
 
   // Latest balance lookup from the latest transaction snapshot
-  const latestItem = transactions.length > 0 ? transactions[0] : null;
+  const sortedTransactions = sortTransactionsDesc(transactions);
+  const latestItem = sortedTransactions.length > 0 ? sortedTransactions[0] : null;
 
   const currentDuitDibawa = latestItem && latestItem.duitDibawa !== undefined ? Number(latestItem.duitDibawa) || 0 : 0;
   const currentDuitSaham = latestItem && latestItem.duitSaham !== undefined ? Number(latestItem.duitSaham) || 0 : 0;
@@ -825,7 +826,7 @@ export default function App() {
             <LiveClock />
             <StatCards summary={fullSummary} isInvestor={isInvestor} />
             <TransactionTable
-              transactions={transactions}
+              transactions={sortedTransactions}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onAddNew={() => {

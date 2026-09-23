@@ -16,11 +16,14 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onAdd
     return matchesSearch && itemMonth === filterMonth;
   });
 
-  // Sorting by date
+  // Sorting by date (and exact timestamp/ID for same day)
   const sorted = [...filtered].sort((a, b) => {
     const dateA = new Date(a.tanggal).getTime();
     const dateB = new Date(b.tanggal).getTime();
-    return sortAsc ? dateA - dateB : dateB - dateA;
+    if (dateA !== dateB) return sortAsc ? dateA - dateB : dateB - dateA;
+    const timeA = Number(a.id) || 0;
+    const timeB = Number(b.id) || 0;
+    return sortAsc ? timeA - timeB : timeB - timeA;
   });
 
   // Calculate Column Totals
