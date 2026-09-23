@@ -862,8 +862,20 @@ export default function App() {
         initialData={editingItem}
         dreams={dreams}
         currentBalances={{
-          duitDibawa: currentDuitDibawa,
-          duitSaham: currentDuitSaham
+          duitDibawa: editingItem
+            ? (() => {
+                const idx = transactions.findIndex((t) => t.id === editingItem.id);
+                const prev = idx >= 0 && idx < transactions.length - 1 ? transactions[idx + 1] : null;
+                return prev ? Number(prev.duitDibawa) || 0 : 0;
+              })()
+            : currentDuitDibawa,
+          duitSaham: editingItem
+            ? (() => {
+                const idx = transactions.findIndex((t) => t.id === editingItem.id);
+                const prev = idx >= 0 && idx < transactions.length - 1 ? transactions[idx + 1] : null;
+                return prev ? Number(prev.duitSaham) || 0 : 0;
+              })()
+            : currentDuitSaham
         }}
         isInvestor={isInvestor}
       />

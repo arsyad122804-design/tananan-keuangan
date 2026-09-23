@@ -73,10 +73,15 @@ export default function TransactionModal({
   const handleChange = (e) => {
     const { name, value } = e.target;
 
+    let nextCashOverride = manualOverrideCash;
+    let nextSahamOverride = manualOverrideSaham;
+
     if (name === 'duitDibawa') {
+      nextCashOverride = true;
       setManualOverrideCash(true);
     }
     if (name === 'duitSaham') {
+      nextSahamOverride = true;
       setManualOverrideSaham(true);
     }
 
@@ -88,18 +93,35 @@ export default function TransactionModal({
       const prof = Number(next.profitSaham) || 0;
       const loss = Number(next.lossSaham) || 0;
 
-      // When income or expense is typed, automatically adjust Cash (Duit Dibawa)
-      if (name === 'pemasukan' || name === 'pengeluaran') {
-        const calculatedCash = baseCash + inc - exp;
-        next.duitDibawa = String(calculatedCash);
-        setManualOverrideCash(false);
+      // Calculate Cash & Deficit
+      const totalAvailableCash = baseCash + inc;
+      let finalCash = 0;
+      let cashDeficit = 0;
+
+      if (totalAvailableCash >= exp) {
+        finalCash = totalAvailableCash - exp;
+        cashDeficit = 0;
+      } else {
+        finalCash = 0;
+        cashDeficit = exp - totalAvailableCash;
       }
 
-      // When profit or loss saham is typed, automatically adjust Stock (Duit di Saham)
+      // Base stock + profit - loss - cashDeficit (karena uang cash kosong/kurang, otomatis memotong dari dana saham)
+      const finalSaham = Math.max(0, baseSaham + prof - loss - (isInvestor ? cashDeficit : 0));
+
+      if (name === 'pemasukan' || name === 'pengeluaran') {
+        if (!nextCashOverride) {
+          next.duitDibawa = String(finalCash);
+        }
+        if (isInvestor && !nextSahamOverride) {
+          next.duitSaham = String(finalSaham);
+        }
+      }
+
       if (name === 'profitSaham' || name === 'lossSaham') {
-        const calculatedSaham = baseSaham + prof - loss;
-        next.duitSaham = String(calculatedSaham);
-        setManualOverrideSaham(false);
+        if (isInvestor && !nextSahamOverride) {
+          next.duitSaham = String(finalSaham);
+        }
       }
 
       return next;
@@ -112,10 +134,24 @@ export default function TransactionModal({
     const prof = Number(formData.profitSaham) || 0;
     const loss = Number(formData.lossSaham) || 0;
 
+    const totalAvailableCash = baseCash + inc;
+    let finalCash = 0;
+    let cashDeficit = 0;
+
+    if (totalAvailableCash >= exp) {
+      finalCash = totalAvailableCash - exp;
+      cashDeficit = 0;
+    } else {
+      finalCash = 0;
+      cashDeficit = exp - totalAvailableCash;
+    }
+
+    const finalSaham = Math.max(0, baseSaham + prof - loss - (isInvestor ? cashDeficit : 0));
+
     setFormData((prev) => ({
       ...prev,
-      duitDibawa: String(baseCash + inc - exp),
-      duitSaham: String(baseSaham + prof - loss)
+      duitDibawa: String(finalCash),
+      duitSaham: isInvestor ? String(finalSaham) : prev.duitSaham
     }));
     setManualOverrideCash(false);
     setManualOverrideSaham(false);
