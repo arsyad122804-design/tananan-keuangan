@@ -22,6 +22,8 @@ import DreamTracker from './components/DreamTracker';
 import DreamModal from './components/DreamModal';
 import MonthlyNeedTracker from './components/MonthlyNeedTracker';
 import MonthlyNeedModal from './components/MonthlyNeedModal';
+import InvestmentTracker from './components/InvestmentTracker';
+import InvestmentModal from './components/InvestmentModal';
 import DatabaseConfigModal from './components/DatabaseConfigModal';
 import AuthScreen from './components/AuthScreen';
 import { exportToExcel } from './utils/excelExport';
@@ -76,11 +78,19 @@ export default function App() {
     return saved ? JSON.parse(saved) : INITIAL_MONTHLY_NEEDS;
   });
 
-  const [activeTab, setActiveTab] = useState('CATATAN'); // 'CATATAN' | 'KEBUTUHAN' | 'IMPIAN'
+  const [investments, setInvestments] = useState(() => {
+    const saved = localStorage.getItem('tatanan_uang_investments');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [activeTab, setActiveTab] = useState('CATATAN'); // 'CATATAN' | 'INVESTASI' | 'KEBUTUHAN' | 'IMPIAN'
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isDreamModalOpen, setIsDreamModalOpen] = useState(false);
   const [isNeedModalOpen, setIsNeedModalOpen] = useState(false);
+  const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
+  const [investmentModalMode, setInvestmentModalMode] = useState('NEW'); // 'NEW' | 'EDIT' | 'REALIZE'
+  const [editingInvestment, setEditingInvestment] = useState(null);
   const [isDbModalOpen, setIsDbModalOpen] = useState(false);
   const [dbStatus, setDbStatus] = useState('LOCAL'); // 'LOCAL' | 'CONNECTED' | 'CONNECTING' | 'ERROR'
   const [editingItem, setEditingItem] = useState(null);
@@ -127,6 +137,9 @@ export default function App() {
               setTransactions(sortTransactionsDesc(cloudData.transactions || []));
               setDreams(cloudData.dreams || []);
               setMonthlyNeeds(cloudData.monthlyNeeds || []);
+              if (cloudData.investments) {
+                setInvestments(cloudData.investments);
+              }
             }
           } catch (e) {
             console.error('Failed to load cloud data on startup:', e);
@@ -155,6 +168,11 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('tatanan_uang_monthly_needs', JSON.stringify(monthlyNeeds));
   }, [monthlyNeeds]);
+
+  // Persist investments to LocalStorage whenever updated
+  useEffect(() => {
+    localStorage.setItem('tatanan_uang_investments', JSON.stringify(investments));
+  }, [investments]);
 
   // Monthly Needs Handlers
   const handleToggleNeedPaid = (id) => {
@@ -538,6 +556,9 @@ export default function App() {
           if (cloudData.monthlyNeeds && cloudData.monthlyNeeds.length > 0) {
             setMonthlyNeeds(cloudData.monthlyNeeds);
           }
+          if (cloudData.investments && cloudData.investments.length > 0) {
+            setInvestments(cloudData.investments);
+          }
           showTemporaryToast('Data berhasil disinkronkan dari Cloud Supabase! ☁️');
         }
       } catch (err) {
@@ -571,6 +592,92 @@ export default function App() {
       return copy;
     });
     showTemporaryToast('Prioritas Impian Berhasil Diturunkan! ⬇️');
+  };
+
+  // Investment (Saham) Handlers
+  const handleSaveInvestment = (formData, mode) => {
+    if (mode === 'REALIZE') {
+      // Realization / Sale of stock
+      const pnl = Number(formData.nominalProfitLoss) || 0;
+      const isProfit = formData.profitLossType === 'PROFIT';
+      const netChange = isProfit ? pnl : -pnl;
+      const modal = Number(formData.modalInvestasi) || 0;
+      const totalKembali = isProfit ? modal + pnl : Math.max(0, modal - pnl);
+
+      const updatedInv = {
+        ...formData,
+        status: 'CLOSED',
+        totalKembali
+      };
+
+      setInvestments((prev) =>
+        prev.map((i) => (i.id === formData.id ? updatedInv : i))
+      );
+      syncItemToSupabase('investments', updatedInv);
+
+      // Automatically update Duit di Saham and record a transaction in history
+      const newTx = {
+        id: Date.now().toString(),
+        tanggal: formData.tanggalJual || getTodayISOString(),
+        kebutuhan: `Jual Saham ${formData.namaSaham} (${isProfit ? `Profit +${formatRupiah(pnl)}` : `Cut Loss -${formatRupiah(pnl)}`})`,
+        pemasukan: 0,
+        pengeluaran: 0,
+        profitSaham: isProfit ? pnl : 0,
+        lossSaham: !isProfit ? pnl : 0,
+        duitDibawa: currentDuitDibawa,
+        duitSaham: Math.max(0, currentDuitSaham + netChange)
+      };
+
+      setTransactions((prev) => sortTransactionsDesc([newTx, ...prev]));
+      syncItemToSupabase('transactions', newTx);
+
+      showTemporaryToast(
+        isProfit
+          ? `🎉 Saham ${formData.namaSaham} Dijual Untung! +${formatRupiah(pnl)} kembali ke Duit Saham.`
+          : `⚠️ Saham ${formData.namaSaham} Dijual Cut Loss -${formatRupiah(pnl)}. Sisa ${formatRupiah(totalKembali)} kembali ke Duit Saham.`
+      );
+    } else if (editingInvestment) {
+      const updated = { ...editingInvestment, ...formData };
+      setInvestments((prev) =>
+        prev.map((i) => (i.id === editingInvestment.id ? updated : i))
+      );
+      syncItemToSupabase('investments', updated);
+      setEditingInvestment(null);
+      showTemporaryToast(`Saham ${formData.namaSaham} berhasil diperbarui!`);
+    } else {
+      // New investment purchase
+      const newInv = {
+        id: 'inv_' + Date.now().toString(),
+        status: 'HOLDING',
+        profitLossType: 'NONE',
+        nominalProfitLoss: 0,
+        totalKembali: 0,
+        ...formData
+      };
+      setInvestments((prev) => [newInv, ...prev]);
+      syncItemToSupabase('investments', newInv);
+      showTemporaryToast(`Saham ${formData.namaSaham} modal ${formatRupiah(formData.modalInvestasi)} berhasil dicatat! 📈`);
+    }
+  };
+
+  const handleRealizeInvestment = (item) => {
+    setEditingInvestment(item);
+    setInvestmentModalMode('REALIZE');
+    setIsInvestmentModalOpen(true);
+  };
+
+  const handleEditInvestment = (item) => {
+    setEditingInvestment(item);
+    setInvestmentModalMode('EDIT');
+    setIsInvestmentModalOpen(true);
+  };
+
+  const handleDeleteInvestment = (id) => {
+    if (window.confirm('Hapus catatan saham ini dari daftar portofolio?')) {
+      setInvestments((prev) => prev.filter((i) => i.id !== id));
+      syncItemToSupabase('investments', id, 'delete');
+      showTemporaryToast('Catatan saham dihapus');
+    }
   };
 
   if (!currentUser) {
@@ -666,6 +773,26 @@ export default function App() {
                 <span>{isInvestor ? 'Catatan & Saham' : 'Catatan Kas'}</span>
               </div>
             </button>
+
+            {/* Tab Khusus Investasi Saham (Hanya Investor) */}
+            {isInvestor && (
+              <button
+                onClick={() => setActiveTab('INVESTASI')}
+                className={`w-full px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold transition flex items-center justify-between gap-3 text-left ${
+                  activeTab === 'INVESTASI'
+                    ? 'bg-blue-500 text-slate-950 shadow-lg shadow-blue-500/20'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <TrendingUp className="w-4 h-4 shrink-0" />
+                  <span>Investasi Saham</span>
+                </div>
+                <span className="text-[10px] bg-slate-950 px-2 py-0.5 rounded-full border border-slate-800 font-mono text-blue-300 whitespace-nowrap shrink-0 inline-flex items-center">
+                  {investments.filter((i) => i.status === 'HOLDING').length} Aktif
+                </span>
+              </button>
+            )}
 
             {/* Tab Kebutuhan Bulanan */}
             <button
@@ -838,6 +965,24 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === 'INVESTASI' && isInvestor && (
+          /* LAYER 4: Portofolio & Investasi Saham */
+          <div className="space-y-6">
+            <InvestmentTracker
+              investments={investments}
+              duitSaham={currentDuitSaham}
+              onAddNew={() => {
+                setEditingInvestment(null);
+                setInvestmentModalMode('NEW');
+                setIsInvestmentModalOpen(true);
+              }}
+              onEdit={handleEditInvestment}
+              onRealize={handleRealizeInvestment}
+              onDelete={handleDeleteInvestment}
+            />
+          </div>
+        )}
+
         {activeTab === 'KEBUTUHAN' && (
           /* LAYER 3: Kebutuhan Bulanan & Pos Rutin Gajian */
           <div className="space-y-6">
@@ -919,6 +1064,18 @@ export default function App() {
         isInvestor={isInvestor}
       />
 
+      {/* Investment Modal (Buy / Edit / Realize Trade) */}
+      <InvestmentModal
+        isOpen={isInvestmentModalOpen}
+        mode={investmentModalMode}
+        onClose={() => {
+          setIsInvestmentModalOpen(false);
+          setEditingInvestment(null);
+        }}
+        onSave={handleSaveInvestment}
+        initialData={editingInvestment}
+      />
+
       {/* Monthly Need Modal (Add / Edit Kebutuhan Bulanan) */}
       <MonthlyNeedModal
         isOpen={isNeedModalOpen}
@@ -966,8 +1123,13 @@ export default function App() {
       <MobileBottomNav
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        isInvestor={isInvestor}
         onAddNew={() => {
-          if (activeTab === 'KEBUTUHAN') {
+          if (activeTab === 'INVESTASI') {
+            setEditingInvestment(null);
+            setInvestmentModalMode('NEW');
+            setIsInvestmentModalOpen(true);
+          } else if (activeTab === 'KEBUTUHAN') {
             setEditingNeed(null);
             setIsNeedModalOpen(true);
           } else if (activeTab === 'IMPIAN') {

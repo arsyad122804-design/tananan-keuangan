@@ -98,17 +98,34 @@ CREATE TABLE IF NOT EXISTS app_users (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 5. TABEL INVESTASI SAHAM PER EMITEN (PORTFOLIO & TRADE TRACKING)
+CREATE TABLE IF NOT EXISTS investments (
+  id TEXT PRIMARY KEY,
+  nama_saham TEXT NOT NULL,
+  modal_investasi NUMERIC DEFAULT 0,
+  tanggal_beli DATE NOT NULL,
+  status TEXT DEFAULT 'HOLDING', -- 'HOLDING' (Sedang Berjalan) | 'CLOSED' (Selesai/Dijual)
+  profit_loss_type TEXT DEFAULT 'NONE', -- 'PROFIT' | 'LOSS' | 'NONE'
+  nominal_profit_loss NUMERIC DEFAULT 0,
+  total_kembali NUMERIC DEFAULT 0,
+  tanggal_jual DATE,
+  keterangan TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Mengaktifkan Row Level Security (RLS)
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE dreams ENABLE ROW LEVEL SECURITY;
 ALTER TABLE monthly_needs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE investments ENABLE ROW LEVEL SECURITY;
 
 -- Memberikan izin akses penuh (Public Read/Write)
 CREATE POLICY "Public full access transactions" ON transactions FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access dreams" ON dreams FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access monthly_needs" ON monthly_needs FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access app_users" ON app_users FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public full access investments" ON investments FOR ALL USING (true) WITH CHECK (true);
 `;
 
 // Default Master User (fikri / fikri)
@@ -234,6 +251,32 @@ export const mapUserFromDb = (u) => ({
   namaLengkap: u.nama_lengkap,
   isInvestor: Boolean(u.is_investor),
   isAdmin: Boolean(u.is_admin)
+});
+
+export const mapInvestmentToDb = (inv) => ({
+  id: String(inv.id),
+  nama_saham: String(inv.namaSaham || '').toUpperCase().trim(),
+  modal_investasi: Number(inv.modalInvestasi) || 0,
+  tanggal_beli: inv.tanggalBeli || inv.tanggal || new Date().toISOString().split('T')[0],
+  status: inv.status || 'HOLDING',
+  profit_loss_type: inv.profitLossType || 'NONE',
+  nominal_profit_loss: Number(inv.nominalProfitLoss) || 0,
+  total_kembali: Number(inv.totalKembali) || 0,
+  tanggal_jual: inv.tanggalJual || null,
+  keterangan: inv.keterangan || ''
+});
+
+export const mapInvestmentFromDb = (inv) => ({
+  id: String(inv.id),
+  namaSaham: inv.nama_saham,
+  modalInvestasi: Number(inv.modal_investasi) || 0,
+  tanggalBeli: inv.tanggal_beli,
+  status: inv.status || 'HOLDING',
+  profitLossType: inv.profit_loss_type || 'NONE',
+  nominalProfitLoss: Number(inv.nominal_profit_loss) || 0,
+  totalKembali: Number(inv.total_kembali) || 0,
+  tanggalJual: inv.tanggal_jual || null,
+  keterangan: inv.keterangan || ''
 });
 
 // Authentication & Local User Management
@@ -386,16 +429,18 @@ export const fetchAllFromSupabase = async () => {
   if (!client) return null;
 
   try {
-    const [txRes, dreamRes, needRes] = await Promise.all([
+    const [txRes, dreamRes, needRes, invRes] = await Promise.all([
       client.from('transactions').select('*').order('tanggal', { ascending: false }).order('created_at', { ascending: false }),
       client.from('dreams').select('*').order('created_at', { ascending: true }),
-      client.from('monthly_needs').select('*').order('created_at', { ascending: true })
+      client.from('monthly_needs').select('*').order('created_at', { ascending: true }),
+      client.from('investments').select('*').order('created_at', { ascending: false })
     ]);
 
     return {
       transactions: txRes.data ? txRes.data.map(mapTransactionFromDb) : null,
       dreams: dreamRes.data ? dreamRes.data.map(mapDreamFromDb) : null,
-      monthlyNeeds: needRes.data ? needRes.data.map(mapMonthlyNeedFromDb) : null
+      monthlyNeeds: needRes.data ? needRes.data.map(mapMonthlyNeedFromDb) : null,
+      investments: invRes.data ? invRes.data.map(mapInvestmentFromDb) : null
     };
   } catch (err) {
     console.error('Error fetching data from Supabase:', err);
@@ -416,6 +461,7 @@ export const syncItemToSupabase = async (table, item, action = 'upsert') => {
       else if (table === 'dreams') payload = mapDreamToDb(item);
       else if (table === 'monthly_needs') payload = mapMonthlyNeedToDb(item);
       else if (table === 'app_users') payload = mapUserToDb(item);
+      else if (table === 'investments') payload = mapInvestmentToDb(item);
 
       if (payload) {
         await client.from(table).upsert(payload);
