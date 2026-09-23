@@ -46,6 +46,9 @@ const INITIAL_TRANSACTIONS = [];
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => getCurrentSession());
 
+  const isInvestor = currentUser ? Boolean(currentUser.isInvestor) : true;
+  const isMasterAdmin = currentUser ? (currentUser.username === 'fikri' || currentUser.isAdmin) : false;
+
   const [transactions, setTransactions] = useState(() => {
     const saved = localStorage.getItem('tatanan_uang_transactions');
     return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
@@ -550,9 +553,6 @@ export default function App() {
   if (!currentUser) {
     return <AuthScreen onLoginSuccess={(user) => setCurrentUser(user)} />;
   }
-
-  const isInvestor = Boolean(currentUser.isInvestor);
-  const isMasterAdmin = currentUser.username === 'fikri' || currentUser.isAdmin;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500">
