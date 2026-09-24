@@ -219,105 +219,109 @@ export default function DreamTracker({
                     : 'border-slate-800 hover:border-amber-500/50'
                 }`}
               >
-                {/* Top Badge, Priority Reorder & Checklist */}
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-start gap-3">
-                    {/* Ceklis Button / Toggle Impian Tercapai (Locked until 100% Full) */}
-                    <button
-                      onClick={() => {
-                        if (isFull || item.isCompleted) {
-                          onToggleComplete(item.id);
+                {/* Top Header: Row 1 (Name & Actions), Row 2 (Clean Status & Duration Badges) */}
+                <div className="space-y-2.5 mb-3.5">
+                  {/* Row 1: Checklist Button, Dream Name, and Action Buttons */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      {/* Ceklis Button / Toggle Impian Tercapai */}
+                      <button
+                        onClick={() => {
+                          if (isFull || item.isCompleted) {
+                            onToggleComplete(item.id);
+                          }
+                        }}
+                        disabled={!isFull && !item.isCompleted}
+                        className={`p-1.5 rounded-xl transition flex items-center justify-center shrink-0 ${
+                          item.isCompleted
+                            ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-md shadow-emerald-500/20'
+                            : isFull
+                            ? 'bg-amber-400 text-slate-950 hover:bg-amber-300 animate-bounce shadow-md shadow-amber-500/30 cursor-pointer'
+                            : 'bg-slate-950 border border-slate-800/80 text-slate-600 opacity-40 cursor-not-allowed'
+                        }`}
+                        title={
+                          item.isCompleted
+                            ? 'Batalkan Status Tercapai'
+                            : isFull
+                            ? '🎉 Dana sudah 100% FULL! Klik Ceklis untuk selesaikan impian ini'
+                            : `🔒 Ceklis Terkunci! (${percentage}% - Terkumpul ${formatRupiah(saved)} dari ${formatRupiah(target)}). Ceklis terbuka saat 100% FULL.`
                         }
-                      }}
-                      disabled={!isFull && !item.isCompleted}
-                      className={`p-1.5 rounded-xl transition flex items-center justify-center ${
-                        item.isCompleted
-                          ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-md shadow-emerald-500/20'
-                          : isFull
-                          ? 'bg-amber-400 text-slate-950 hover:bg-amber-300 animate-bounce shadow-md shadow-amber-500/30 cursor-pointer'
-                          : 'bg-slate-950 border border-slate-800/80 text-slate-600 opacity-40 cursor-not-allowed'
-                      }`}
-                      title={
-                        item.isCompleted
-                          ? 'Batalkan Status Tercapai'
-                          : isFull
-                          ? '🎉 Dana sudah 100% FULL! Klik Ceklis untuk selesaikan impian ini'
-                          : `🔒 Ceklis Terkunci! (${percentage}% - Terkumpul ${formatRupiah(saved)} dari ${formatRupiah(target)}). Ceklis terbuka saat 100% FULL.`
-                      }
-                    >
-                      {item.isCompleted ? (
-                        <CheckCircle2 className="w-6 h-6 stroke-[3]" />
-                      ) : (
-                        <Circle className="w-6 h-6" />
-                      )}
-                    </button>
-
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className={`text-base font-bold ${item.isCompleted ? 'line-through text-slate-300' : 'text-white'}`}>
-                          {item.namaImpian}
-                        </h3>
+                      >
                         {item.isCompleted ? (
-                          <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-emerald-500/40 flex items-center gap-1">
-                            <PartyPopper className="w-3 h-3 text-emerald-400" />
-                            TERCAPAI!
-                          </span>
-                        ) : isFull ? (
-                          <span className="bg-amber-500/20 text-amber-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-amber-500/40 flex items-center gap-1 animate-pulse">
-                            <Sparkles className="w-3 h-3 text-amber-400" />
-                            100% FULL!
-                          </span>
+                          <CheckCircle2 className="w-5 h-5 stroke-[3]" />
                         ) : (
-                          <span className="bg-amber-500/10 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/20 flex items-center gap-1">
-                            <AlertCircle className="w-3 h-3 text-amber-400 shrink-0" />
-                            Dana Belum Mencukupi ({percentage}%)
-                          </span>
+                          <Circle className="w-5 h-5" />
                         )}
-                      </div>
+                      </button>
 
-                      <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
-                        <Clock className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Jangka Waktu: <strong className="text-slate-200">{jangkaStr}</strong></span>
-                      </div>
+                      <h3 className={`text-base font-bold truncate ${item.isCompleted ? 'line-through text-slate-400' : 'text-white'}`}>
+                        {item.namaImpian}
+                      </h3>
+                    </div>
+
+                    {/* Actions & Priority Reorder Buttons */}
+                    <div className="flex items-center gap-0.5 shrink-0 bg-slate-900/90 border border-slate-800 p-1 rounded-xl">
+                      {onMoveUp && onMoveDown && !item.isCompleted && (
+                        <>
+                          <button
+                            onClick={() => onMoveUp(item.originalIndex)}
+                            disabled={item.originalIndex === 0}
+                            className="p-1 text-slate-400 hover:text-white disabled:opacity-25 transition"
+                            title="Naikkan Prioritas"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => onMoveDown(item.originalIndex)}
+                            disabled={item.originalIndex === dreams.length - 1}
+                            className="p-1 text-slate-400 hover:text-white disabled:opacity-25 transition"
+                            title="Turunkan Prioritas"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                          <div className="w-px h-3.5 bg-slate-800 mx-0.5" />
+                        </>
+                      )}
+                      <button
+                        onClick={() => onEdit(item)}
+                        className="p-1 text-slate-400 hover:text-amber-400 rounded transition"
+                        title="Edit Impian"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(item.id)}
+                        className="p-1 text-slate-400 hover:text-red-400 rounded transition"
+                        title="Hapus Impian"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
 
-                  {/* Actions & Priority Reorder Buttons */}
-                  <div className="flex items-center gap-1">
-                    {onMoveUp && onMoveDown && !item.isCompleted && (
-                      <div className="flex items-center gap-0.5 mr-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800">
-                        <button
-                          onClick={() => onMoveUp(item.originalIndex)}
-                          disabled={item.originalIndex === 0}
-                          className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400 transition"
-                          title="Naikkan Prioritas"
-                        >
-                          <ArrowUp className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => onMoveDown(item.originalIndex)}
-                          disabled={item.originalIndex === dreams.length - 1}
-                          className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400 transition"
-                          title="Turunkan Prioritas"
-                        >
-                          <ArrowDown className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                  {/* Row 2: Clean Status Pill & Jangka Waktu Badge (No Squishing / No Clutter) */}
+                  <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-900/80">
+                    {item.isCompleted ? (
+                      <span className="bg-emerald-500/20 text-emerald-300 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-emerald-500/40 inline-flex items-center gap-1.5 whitespace-nowrap">
+                        <PartyPopper className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span>TERCAPAI (100%)</span>
+                      </span>
+                    ) : isFull ? (
+                      <span className="bg-amber-500/20 text-amber-300 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-amber-500/40 inline-flex items-center gap-1.5 animate-pulse whitespace-nowrap">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <span>DANA 100% FULL!</span>
+                      </span>
+                    ) : (
+                      <span className="bg-amber-500/10 text-amber-300 text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-amber-500/30 inline-flex items-center gap-1.5 whitespace-nowrap">
+                        <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <span>Dana Belum Cukup ({percentage}%)</span>
+                      </span>
                     )}
-                    <button
-                      onClick={() => onEdit(item)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-slate-900 transition"
-                      title="Edit Impian"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => onDelete(item.id)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-900 transition"
-                      title="Hapus Impian"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+
+                    <span className="bg-slate-900 text-slate-300 text-[11px] font-medium px-2.5 py-1 rounded-lg border border-slate-800 inline-flex items-center gap-1.5 whitespace-nowrap">
+                      <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>Jangka Waktu: <strong className="text-white font-semibold">{jangkaStr}</strong></span>
+                    </span>
                   </div>
                 </div>
 
