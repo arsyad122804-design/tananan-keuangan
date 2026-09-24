@@ -5,11 +5,14 @@ const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
 
 // Get credentials from localStorage first, fallback to Vite env variables or defaults
 export const getSupabaseConfig = () => {
-  const localUrl = localStorage.getItem('tatanan_uang_supabase_url');
-  const localKey = localStorage.getItem('tatanan_uang_supabase_anon_key');
+  const localUrl = typeof window !== 'undefined' && window.localStorage ? window.localStorage.getItem('tatanan_uang_supabase_url') : null;
+  const localKey = typeof window !== 'undefined' && window.localStorage ? window.localStorage.getItem('tatanan_uang_supabase_anon_key') : null;
 
-  const url = localUrl || import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-  const anonKey = localKey || import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
+  const envUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SUPABASE_URL) || null;
+  const envKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SUPABASE_ANON_KEY) || null;
+
+  const url = localUrl || envUrl || DEFAULT_SUPABASE_URL;
+  const anonKey = localKey || envKey || DEFAULT_SUPABASE_ANON_KEY;
 
   return { url: (url || '').trim(), anonKey: (anonKey || '').trim() };
 };
@@ -436,11 +439,52 @@ export const fetchAllFromSupabase = async () => {
       client.from('investments').select('*').order('created_at', { ascending: false })
     ]);
 
+    // Separate real dreams from fallback investments stored in dreams table
+    let cleanDreams = [];
+    const fallbackInvestments = [];
+
+    if (dreamRes.data && Array.isArray(dreamRes.data)) {
+      dreamRes.data.forEach((row) => {
+        const isInv = String(row.id || '').startsWith('inv_') || String(row.keterangan || '').startsWith('TATANAN_INV:');
+        if (isInv) {
+          try {
+            if (row.keterangan && row.keterangan.startsWith('TATANAN_INV:')) {
+              const parsed = JSON.parse(row.keterangan.replace('TATANAN_INV:', ''));
+              fallbackInvestments.push(parsed);
+            } else {
+              fallbackInvestments.push({
+                id: row.id,
+                namaSaham: row.nama_impian || 'SAHAM',
+                modalInvestasi: Number(row.target_biaya) || 0,
+                tanggalBeli: row.created_at ? row.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+                status: row.jangka_satuan || 'HOLDING',
+                profitLossType: 'NONE',
+                nominalProfitLoss: Number(row.terkumpul) || 0,
+                totalKembali: 0,
+                keterangan: row.keterangan || ''
+              });
+            }
+          } catch (e) {
+            console.error('Error parsing fallback investment from dream row:', e);
+          }
+        } else {
+          cleanDreams.push(mapDreamFromDb(row));
+        }
+      });
+    }
+
+    let finalInvestments = null;
+    if (invRes.data && Array.isArray(invRes.data) && invRes.data.length > 0) {
+      finalInvestments = invRes.data.map(mapInvestmentFromDb);
+    } else if (fallbackInvestments.length > 0) {
+      finalInvestments = fallbackInvestments;
+    }
+
     return {
       transactions: txRes.data ? txRes.data.map(mapTransactionFromDb) : null,
-      dreams: dreamRes.data ? dreamRes.data.map(mapDreamFromDb) : null,
+      dreams: cleanDreams.length > 0 || (dreamRes.data && dreamRes.data.length === 0) ? cleanDreams : null,
       monthlyNeeds: needRes.data ? needRes.data.map(mapMonthlyNeedFromDb) : null,
-      investments: invRes.data ? invRes.data.map(mapInvestmentFromDb) : null
+      investments: finalInvestments
     };
   } catch (err) {
     console.error('Error fetching data from Supabase:', err);
@@ -453,6 +497,36 @@ export const syncItemToSupabase = async (table, item, action = 'upsert') => {
   if (!client) return;
 
   try {
+    if (table === 'investments') {
+      const invId = String(item.id || item);
+      const dreamFallbackId = invId.startsWith('inv_') ? invId : 'inv_' + invId;
+
+      if (action === 'delete') {
+        // Delete from investments table
+        client.from('investments').delete().eq('id', invId).catch(() => {});
+        // Also delete from fallback dreams table
+        await client.from('dreams').delete().eq('id', dreamFallbackId);
+      } else {
+        // Upsert to investments table (if exists)
+        const payload = mapInvestmentToDb(item);
+        client.from('investments').upsert(payload).catch(() => {});
+
+        // Also upsert to fallback dreams table for guaranteed cross-device sync
+        const dreamFallbackPayload = {
+          id: dreamFallbackId,
+          nama_impian: String(item.namaSaham || 'SAHAM').toUpperCase().trim(),
+          target_biaya: Number(item.modalInvestasi) || 0,
+          terkumpul: Number(item.nominalProfitLoss) || 0,
+          jangka_nilai: 1,
+          jangka_satuan: item.status || 'HOLDING',
+          is_completed: item.status === 'CLOSED',
+          keterangan: 'TATANAN_INV:' + JSON.stringify(item)
+        };
+        await client.from('dreams').upsert(dreamFallbackPayload);
+      }
+      return;
+    }
+
     if (action === 'delete') {
       await client.from(table).delete().eq('id', String(item.id || item));
     } else {
@@ -461,7 +535,6 @@ export const syncItemToSupabase = async (table, item, action = 'upsert') => {
       else if (table === 'dreams') payload = mapDreamToDb(item);
       else if (table === 'monthly_needs') payload = mapMonthlyNeedToDb(item);
       else if (table === 'app_users') payload = mapUserToDb(item);
-      else if (table === 'investments') payload = mapInvestmentToDb(item);
 
       if (payload) {
         await client.from(table).upsert(payload);
@@ -471,3 +544,4 @@ export const syncItemToSupabase = async (table, item, action = 'upsert') => {
     console.error(`Error syncing ${action} to ${table}:`, err);
   }
 };
+

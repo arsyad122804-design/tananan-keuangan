@@ -119,8 +119,24 @@ export default function App() {
     const saved = localStorage.getItem('tatanan_uang_investments');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        let parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          parsed = parsed.map((inv) => {
+            const name = String(inv.namaSaham || '').toUpperCase().replace(/\s+/g, '');
+            if ((inv.id === 'inv_emtek' || name === 'EMTEK' || name === 'EMTK') && (inv.modalInvestasi === 500000 || !inv.modalInvestasi)) {
+              return { ...inv, modalInvestasi: 916999 };
+            }
+            if ((inv.id === 'inv_spacex' || name === 'SPACEX') && (inv.modalInvestasi === 1000000 || !inv.modalInvestasi)) {
+              return { ...inv, modalInvestasi: 1211539 };
+            }
+            if ((inv.id === 'inv_tpia' || name === 'TPIA' || name === 'TPAI') && (inv.modalInvestasi === 700000 || inv.modalInvestasi === 500000 || !inv.modalInvestasi)) {
+              return { ...inv, modalInvestasi: 967999 };
+            }
+            return inv;
+          });
+          localStorage.setItem('tatanan_uang_investments', JSON.stringify(parsed));
+          return parsed;
+        }
       } catch (e) {
         console.error(e);
       }
@@ -187,7 +203,26 @@ export default function App() {
           setMonthlyNeeds(cloudData.monthlyNeeds);
         }
         if (cloudData.investments && cloudData.investments.length > 0) {
-          setInvestments(cloudData.investments);
+          const updatedInv = cloudData.investments.map((inv) => {
+            const name = String(inv.namaSaham || '').toUpperCase().replace(/\s+/g, '');
+            if ((inv.id === 'inv_emtek' || name === 'EMTEK' || name === 'EMTK') && (inv.modalInvestasi === 500000 || !inv.modalInvestasi)) {
+              const fixed = { ...inv, modalInvestasi: 916999 };
+              syncItemToSupabase('investments', fixed);
+              return fixed;
+            }
+            if ((inv.id === 'inv_spacex' || name === 'SPACEX') && (inv.modalInvestasi === 1000000 || !inv.modalInvestasi)) {
+              const fixed = { ...inv, modalInvestasi: 1211539 };
+              syncItemToSupabase('investments', fixed);
+              return fixed;
+            }
+            if ((inv.id === 'inv_tpia' || name === 'TPIA' || name === 'TPAI') && (inv.modalInvestasi === 700000 || inv.modalInvestasi === 500000 || !inv.modalInvestasi)) {
+              const fixed = { ...inv, modalInvestasi: 967999 };
+              syncItemToSupabase('investments', fixed);
+              return fixed;
+            }
+            return inv;
+          });
+          setInvestments(updatedInv);
         }
         if (!silent) {
           showTemporaryToast('Data tersinkronisasi realtime dari Cloud! ☁️');
