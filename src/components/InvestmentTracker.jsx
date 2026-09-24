@@ -245,54 +245,57 @@ export default function InvestmentTracker({
                 className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg relative overflow-hidden space-y-4 hover:border-slate-700 transition"
               >
                 {/* Header Row */}
-                <div className="flex items-start justify-between gap-2 border-b border-slate-800 pb-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-base shadow-md ${
-                      isClosed
-                        ? isProfit
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                        : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                    }`}>
-                      {item.namaSaham.substring(0, 4)}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-black text-white tracking-wider font-mono">
-                          {item.namaSaham}
-                        </h3>
-                        <span className={`text-[9px] px-2 py-0.5 rounded font-bold ${
-                          isClosed
-                            ? isProfit
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                              : 'bg-red-500/20 text-red-300 border border-red-500/30'
-                            : 'bg-blue-500/20 text-blue-300 border border-blue-500/30 animate-pulse'
-                        }`}>
-                          {isClosed ? (isProfit ? '📈 Dijual Untung' : '📉 Cut Loss') : '⏳ Sedang Berjalan'}
-                        </span>
+                <div className="space-y-2 border-b border-slate-800 pb-3">
+                  {/* Row 1: Stock Avatar + Full Stock Name (1 horizontal line) + Actions */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs sm:text-sm shrink-0 shadow-md ${
+                        isClosed
+                          ? isProfit
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                          : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                      }`}>
+                        {item.namaSaham.replace(/\s+/g, '').substring(0, 4)}
                       </div>
-                      <span className="text-[11px] text-slate-400 block mt-0.5 font-mono">
-                        Beli: {formatDateFull(item.tanggalBeli)}
-                      </span>
+                      <h3 className="text-base sm:text-lg font-black text-white tracking-wider font-mono whitespace-nowrap truncate">
+                        {item.namaSaham}
+                      </h3>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 shrink-0">
+                      <button
+                        onClick={() => onEdit(item)}
+                        className="p-1.5 text-slate-400 hover:text-white rounded-lg transition"
+                        title="Edit Saham"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(item.id)}
+                        className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg transition"
+                        title="Hapus"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
-                    <button
-                      onClick={() => onEdit(item)}
-                      className="p-1.5 text-slate-400 hover:text-white rounded-lg transition"
-                      title="Edit Saham"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => onDelete(item.id)}
-                      className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg transition"
-                      title="Hapus"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                  {/* Row 2: Status Badge & Tanggal Beli (Clean Horizontal Subrow) */}
+                  <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                    <span className={`text-[10px] px-2.5 py-0.5 rounded-lg font-bold whitespace-nowrap inline-flex items-center gap-1 ${
+                      isClosed
+                        ? isProfit
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                          : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                        : 'bg-blue-500/20 text-blue-300 border border-blue-500/30 animate-pulse'
+                    }`}>
+                      {isClosed ? (isProfit ? '📈 Dijual Untung' : '📉 Cut Loss') : '⏳ Sedang Berjalan'}
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-mono whitespace-nowrap">
+                      Beli: {formatDateFull(item.tanggalBeli)}
+                    </span>
                   </div>
                 </div>
 
