@@ -64,17 +64,19 @@ export default function InvestmentTracker({
       {/* 1. Header & Summary Stats */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-5 border-b border-slate-800">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="w-12 h-12 bg-gradient-to-tr from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center text-slate-950 font-bold shadow-lg shadow-blue-500/20 shrink-0">
               <PieChart className="w-6 h-6" />
             </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-                <span>Portofolio & Saham yang Diinvestasikan</span>
-                <span className="text-xs bg-blue-500/10 text-blue-400 px-2.5 py-0.5 rounded-full border border-blue-500/30 font-mono">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-lg sm:text-2xl font-extrabold text-white tracking-tight">
+                  Portofolio & Saham yang Diinvestasikan
+                </h2>
+                <span className="text-xs bg-blue-500/10 text-blue-400 px-2.5 py-0.5 rounded-lg border border-blue-500/30 font-mono font-bold whitespace-nowrap shrink-0 inline-flex items-center">
                   {activeHoldings.length} Aktif
                 </span>
-              </h2>
+              </div>
               <p className="text-xs text-slate-400 mt-0.5">
                 Catat emiten yang dibeli, dan kalkulasi profit/loss otomatis kembali ke Portofolio
               </p>
@@ -83,10 +85,10 @@ export default function InvestmentTracker({
 
           <button
             onClick={onAddNew}
-            className="w-full md:w-auto px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-slate-950 font-bold rounded-xl shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 text-xs sm:text-sm"
+            className="w-full md:w-auto px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-slate-950 font-bold rounded-xl shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 text-xs sm:text-sm shrink-0"
           >
-            <Plus className="w-4 h-4" />
-            <span>+ Beli / Catat Saham Baru</span>
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>Beli / Catat Saham Baru</span>
           </button>
         </div>
 
@@ -94,11 +96,13 @@ export default function InvestmentTracker({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-5">
           {/* Active Modal */}
           <div className="bg-slate-950/80 border border-blue-500/30 rounded-2xl p-4 space-y-1">
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span className="font-semibold uppercase tracking-wider text-[11px] text-blue-300">
+            <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
+              <span className="font-semibold uppercase tracking-wider text-[11px] text-blue-300 truncate">
                 📊 Sedang Diinvestasikan (Holding)
               </span>
-              <span className="text-blue-400 font-bold">{activeHoldings.length} Saham</span>
+              <span className="text-blue-400 font-bold font-mono whitespace-nowrap shrink-0">
+                {activeHoldings.length} Saham
+              </span>
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-blue-400 font-mono">
               {formatRupiah(totalActiveModal)}
@@ -108,11 +112,13 @@ export default function InvestmentTracker({
 
           {/* Realized Returns */}
           <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-1">
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-300">
+            <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
+              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-300 truncate">
                 💰 Total Realisasi Dijual
               </span>
-              <span className="text-slate-400 font-bold">{closedTrades.length} Selesai</span>
+              <span className="text-slate-400 font-bold font-mono whitespace-nowrap shrink-0">
+                {closedTrades.length} Selesai
+              </span>
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-white font-mono">
               {formatRupiah(totalClosedKembali)}
@@ -122,11 +128,11 @@ export default function InvestmentTracker({
 
           {/* Net PnL Realized */}
           <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-1">
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-300">
+            <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
+              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-300 truncate">
                 📈 Net Profit / Loss Realisasi
               </span>
-              <span className={`text-[10px] font-bold ${netRealizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              <span className={`text-[10px] font-bold font-mono whitespace-nowrap shrink-0 ${netRealizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                 {netRealizedPnl >= 0 ? 'Gain Net' : 'Loss Net'}
               </span>
             </div>
