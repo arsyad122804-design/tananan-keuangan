@@ -393,6 +393,11 @@ export default function App() {
   const completedTargetSum = dreams.filter((d) => d.isCompleted).reduce((sum, d) => sum + (Number(d.targetBiaya) || 0), 0);
   const activeTargetSum = dreams.filter((d) => !d.isCompleted).reduce((sum, d) => sum + (Number(d.targetBiaya) || 0), 0);
 
+  // Remaining wealth available for active dreams is reduced by completed dreams & paid monthly needs
+  const remainingWealthForActive = Math.max(0, totalKekayaan - completedTargetSum - totalKebutuhanTerbayar);
+  const activeDreamTerkumpul = Math.min(remainingWealthForActive, activeTargetSum);
+  const totalDreamTerkumpul = Math.min(totalKekayaan, completedTargetSum + activeDreamTerkumpul);
+
   // Calculate active investments modal (holding)
   const safeInvestments = Array.isArray(investments) ? investments.filter((i) => i != null && typeof i === 'object') : [];
   const activeHoldings = safeInvestments.filter((i) => i.status !== 'CLOSED');
