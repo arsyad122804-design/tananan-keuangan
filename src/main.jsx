@@ -17,14 +17,46 @@ class ErrorBoundary extends React.Component {
     console.error('App Crash caught by ErrorBoundary:', error, errorInfo);
   }
 
-  handleReload = () => {
-    window.location.reload();
+  handleReload = async () => {
+    try {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const reg of registrations) {
+          await reg.unregister();
+        }
+      }
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        for (const key of keys) {
+          await caches.delete(key);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    window.location.href = window.location.origin + window.location.pathname + '?v=' + Date.now();
   };
 
-  handleResetStorage = () => {
-    if (window.confirm('Reset data lokal dan muat ulang aplikasi?')) {
+  handleResetStorage = async () => {
+    if (window.confirm('Bersihkan cache dan muat ulang aplikasi?')) {
+      try {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const reg of registrations) {
+            await reg.unregister();
+          }
+        }
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          for (const key of keys) {
+            await caches.delete(key);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
       localStorage.clear();
-      window.location.reload();
+      window.location.href = window.location.origin + window.location.pathname + '?v=' + Date.now();
     }
   };
 
