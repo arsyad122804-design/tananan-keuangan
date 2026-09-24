@@ -60,6 +60,25 @@ export default function StatCards({ summary, isInvestor = true }) {
               {formatRupiah(summary.duitSaham)}
             </h3>
             <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Saldo Portofolio Saham</p>
+
+            {/* Breakdown Rincian: Total Beli & Profit */}
+            <div className="mt-2.5 pt-2 border-t border-slate-800/80 space-y-1 text-[10px] sm:text-[11px] font-mono">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Total Beli:</span>
+                <span className="text-blue-300 font-bold">
+                  {formatRupiah(summary.totalInvestedModal || 0)}
+                  {summary.activeHoldingCount > 0 && (
+                    <span className="text-[9px] text-slate-400 font-normal ml-1">({summary.activeHoldingCount} saham)</span>
+                  )}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Profit/Loss:</span>
+                <span className={`font-bold ${netStockProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {netStockProfit >= 0 ? '+' : ''}{formatRupiah(netStockProfit)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       )}
