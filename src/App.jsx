@@ -72,7 +72,7 @@ const INITIAL_INVESTMENTS = [
   {
     id: 'inv_tpia',
     namaSaham: 'TPIA',
-    modalInvestasi: 700000,
+    modalInvestasi: 967999,
     tanggalBeli: '2026-09-24',
     status: 'HOLDING',
     profitLossType: 'NONE',
