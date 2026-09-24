@@ -72,7 +72,7 @@ export default function InvestmentTracker({
                 </span>
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Catat emiten yang dibeli, dan kalkulasi profit/loss otomatis kembali ke Duit di Saham
+                Catat emiten yang dibeli, dan kalkulasi profit/loss otomatis kembali ke Portofolio
               </p>
             </div>
           </div>
@@ -113,7 +113,7 @@ export default function InvestmentTracker({
             <h3 className="text-xl sm:text-2xl font-black text-white font-mono">
               {formatRupiah(totalClosedKembali)}
             </h3>
-            <p className="text-[10px] text-slate-400">Uang yang sudah cair kembali ke Duit di Saham</p>
+            <p className="text-[10px] text-slate-400">Uang yang sudah cair kembali ke Portofolio</p>
           </div>
 
           {/* Net PnL Realized */}
@@ -318,7 +318,7 @@ export default function InvestmentTracker({
                 {isClosed ? (
                   <div className="bg-gradient-to-r from-emerald-950/60 to-slate-950 border border-emerald-500/30 p-3 rounded-xl flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] text-slate-400 block">Uang Kembali ke Duit di Saham:</span>
+                      <span className="text-[10px] text-slate-400 block">Uang Kembali ke Portofolio:</span>
                       <span className="text-sm font-extrabold text-emerald-400 font-mono">
                         {formatRupiah(kembali)}
                       </span>

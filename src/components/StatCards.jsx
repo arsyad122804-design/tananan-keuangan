@@ -25,7 +25,7 @@ export default function StatCards({ summary, isInvestor = true }) {
             {formatRupiah(isInvestor ? summary.totalKekayaan : summary.duitDibawa)}
           </h3>
           <p className="text-[11px] sm:text-xs text-emerald-400/80 mt-0.5 font-medium">
-            {isInvestor ? '(Cash + Duit di Saham)' : '(Total Saldo Kas)'}
+            {isInvestor ? '(Cash + Portofolio)' : '(Total Saldo Kas)'}
           </p>
         </div>
       </div>
@@ -46,11 +46,11 @@ export default function StatCards({ summary, isInvestor = true }) {
         </div>
       </div>
 
-      {/* 3. Duit di Saham (Hanya untuk Investor) */}
+      {/* 3. Portofolio (Hanya untuk Investor) */}
       {isInvestor && (
         <div className="col-span-1 bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-5 shadow-lg relative overflow-hidden group hover:border-blue-500/50 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-slate-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider">Duit di Saham</span>
+            <span className="text-slate-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider">Portofolio</span>
             <div className="p-2 bg-blue-500/10 rounded-xl text-blue-400 group-hover:scale-110 transition-transform">
               <PieChart className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
@@ -59,7 +59,7 @@ export default function StatCards({ summary, isInvestor = true }) {
             <h3 className="text-base sm:text-2xl font-bold text-blue-400 tracking-tight font-mono">
               {formatRupiah(summary.duitSaham)}
             </h3>
-            <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Portofolio Saham</p>
+            <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Saldo Portofolio Saham</p>
           </div>
         </div>
       )}

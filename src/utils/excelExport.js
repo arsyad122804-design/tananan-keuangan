@@ -10,7 +10,7 @@ export const exportToExcel = (transactions, summary) => {
     ['RINGKASAN KEUANGAN & PORTOFOLIO'],
     ['Kategori', 'Nilai (Rp)'],
     ['Total Duit yang Dibawa (Cash)', summary.duitDibawa],
-    ['Total Duit di Saham', summary.duitSaham],
+    ['Total Portofolio (Saham)', summary.duitSaham],
     ['TOTAL KEKAYAAN ASET', summary.totalKekayaan],
     ['Total Pemasukan', summary.totalPemasukan],
     ['Total Pengeluaran', summary.totalPengeluaran],
@@ -28,7 +28,7 @@ export const exportToExcel = (transactions, summary) => {
       'Profit Saham (Rp)',
       'Loss Saham (Rp)',
       'Duit Dibawa (Rp)',
-      'Duit di Saham (Rp)'
+      'Portofolio (Rp)'
     ]
   ];
 

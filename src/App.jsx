@@ -633,8 +633,8 @@ export default function App() {
 
       showTemporaryToast(
         isProfit
-          ? `🎉 Saham ${formData.namaSaham} Dijual Untung! +${formatRupiah(pnl)} kembali ke Duit Saham.`
-          : `⚠️ Saham ${formData.namaSaham} Dijual Cut Loss -${formatRupiah(pnl)}. Sisa ${formatRupiah(totalKembali)} kembali ke Duit Saham.`
+          ? `🎉 Saham ${formData.namaSaham} Dijual Untung! +${formatRupiah(pnl)} kembali ke Portofolio.`
+          : `⚠️ Saham ${formData.namaSaham} Dijual Cut Loss -${formatRupiah(pnl)}. Sisa ${formatRupiah(totalKembali)} kembali ke Portofolio.`
       );
     } else if (editingInvestment) {
       const updated = { ...editingInvestment, ...formData };

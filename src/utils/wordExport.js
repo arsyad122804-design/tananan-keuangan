@@ -62,7 +62,7 @@ export const exportToWord = async (transactions, summary) => {
   // Summary Table Rows
   const summaryRowsData = [
     ['Total Duit yang Dibawa (Cash)', formatRupiah(summary.duitDibawa)],
-    ['Total Duit di Saham', formatRupiah(summary.duitSaham)],
+    ['Total Portofolio (Saham)', formatRupiah(summary.duitSaham)],
     ['TOTAL KEKAYAAN ASET', formatRupiah(summary.totalKekayaan)],
     ['Total Pemasukan', `+${formatRupiah(summary.totalPemasukan)}`],
     ['Total Pengeluaran', `-${formatRupiah(summary.totalPengeluaran)}`],

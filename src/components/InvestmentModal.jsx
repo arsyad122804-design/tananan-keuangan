@@ -120,7 +120,7 @@ export default function InvestmentModal({
               </h3>
               <p className="text-xs text-slate-400 font-normal">
                 {mode === 'REALIZE'
-                  ? 'Hitung untung/rugi & uang kembali ke Duit di Saham'
+                  ? 'Hitung untung/rugi & uang kembali ke Portofolio'
                   : 'Masukkan emiten dan modal yang dibeli'}
               </p>
             </div>
@@ -302,10 +302,10 @@ export default function InvestmentModal({
                 <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
                   <div>
                     <span className="text-xs font-bold text-white block">
-                      💰 Total Uang Kembali ke Duit di Saham:
+                      💰 Total Uang Kembali ke Portofolio:
                     </span>
                     <span className="text-[10px] text-emerald-400">
-                      (Otomatis masuk & menambah saldo kas saham)
+                      (Otomatis masuk & menambah saldo portofolio saham)
                     </span>
                   </div>
                   <span className="text-base font-extrabold text-emerald-400 font-mono">

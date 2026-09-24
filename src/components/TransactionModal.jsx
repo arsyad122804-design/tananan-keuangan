@@ -414,13 +414,13 @@ export default function TransactionModal({
               </div>
             </div>
 
-            {/* Duit Di Saham (Hanya Investor) */}
+            {/* Portofolio (Hanya Investor) */}
             {isInvestor && (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                     <PieChart className="w-4 h-4 text-blue-400" />
-                    Nilai Duit di Saham (Portofolio Rp)
+                    Portofolio (Saham Rp)
                   </label>
                   <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${manualOverrideSaham ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'}`}>
                     {manualOverrideSaham ? '✏️ Diedit Manual' : '⚡ Otomatis Terhitung'}

@@ -193,7 +193,7 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onAdd
               {/* Card Balances */}
               <div className="flex items-center justify-between pt-1 text-[11px] font-mono text-slate-400 border-t border-slate-800/60">
                 <span className="text-blue-300">Duit Dibawa: {formatRupiah(item.duitDibawa)}</span>
-                {isInvestor && <span className="text-purple-300">Saham: {formatRupiah(item.duitSaham)}</span>}
+                {isInvestor && <span className="text-purple-300">Portofolio: {formatRupiah(item.duitSaham)}</span>}
               </div>
             </div>
           ))
@@ -240,7 +240,7 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onAdd
               {isInvestor && <th className="px-4 py-3.5 text-center text-emerald-400 min-w-[120px]">Profit Saham</th>}
               {isInvestor && <th className="px-4 py-3.5 text-center text-amber-400 min-w-[120px]">Loss Saham</th>}
               <th className="px-4 py-3.5 text-center text-blue-400 min-w-[140px]">Duit Dibawa</th>
-              {isInvestor && <th className="px-4 py-3.5 text-center text-purple-400 min-w-[140px]">Duit di Saham</th>}
+              {isInvestor && <th className="px-4 py-3.5 text-center text-purple-400 min-w-[140px]">Portofolio</th>}
               <th className="px-4 py-3.5 text-center min-w-[100px]">Aksi</th>
             </tr>
           </thead>
