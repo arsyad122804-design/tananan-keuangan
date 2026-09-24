@@ -15,7 +15,8 @@ import {
   Filter,
   Layers,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  RefreshCw
 } from 'lucide-react';
 import { formatRupiah, formatDateFull, formatHumanRupiah } from '../utils/formatters';
 
@@ -26,7 +27,8 @@ export default function InvestmentTracker({
   onEdit,
   onRealize,
   onDelete,
-  onClearHistory
+  onClearHistory,
+  onSyncCloud
 }) {
   const [activeSubTab, setActiveSubTab] = useState('ACTIVE'); // 'ACTIVE' | 'HISTORY'
   const [searchTerm, setSearchTerm] = useState('');
@@ -83,13 +85,26 @@ export default function InvestmentTracker({
             </div>
           </div>
 
-          <button
-            onClick={onAddNew}
-            className="w-full md:w-auto px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-slate-950 font-bold rounded-xl shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 text-xs sm:text-sm shrink-0"
-          >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Beli / Catat Saham Baru</span>
-          </button>
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            {onSyncCloud && (
+              <button
+                onClick={onSyncCloud}
+                className="px-3.5 py-2.5 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold rounded-xl border border-slate-700/80 transition flex items-center justify-center gap-1.5 text-xs sm:text-sm shrink-0"
+                title="Sinkronkan dengan data terbaru di Cloud"
+              >
+                <RefreshCw className="w-3.5 h-3.5 text-blue-400" />
+                <span>Sinkron</span>
+              </button>
+            )}
+
+            <button
+              onClick={onAddNew}
+              className="flex-1 md:flex-none px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-slate-950 font-bold rounded-xl shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 text-xs sm:text-sm shrink-0"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>Beli / Catat Saham Baru</span>
+            </button>
+          </div>
         </div>
 
         {/* 3 Metrics Cards */}

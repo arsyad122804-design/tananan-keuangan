@@ -167,6 +167,37 @@ export default function App() {
   };
 
   // Check Supabase connection and initial sync on mount
+  // Reusable Cloud Sync function
+  const refreshDataFromCloud = async (silent = true) => {
+    try {
+      const config = getSupabaseConfig();
+      if (!config.url || !config.anonKey) return;
+
+      const cloudData = await fetchAllFromSupabase();
+      if (cloudData) {
+        setDbStatus('CONNECTED');
+        if (cloudData.transactions && cloudData.transactions.length > 0) {
+          setTransactions(sortTransactionsDesc(cloudData.transactions));
+        }
+        if (cloudData.dreams && cloudData.dreams.length > 0) {
+          setDreams(cloudData.dreams);
+        }
+        if (cloudData.monthlyNeeds && cloudData.monthlyNeeds.length > 0) {
+          setMonthlyNeeds(cloudData.monthlyNeeds);
+        }
+        if (cloudData.investments && cloudData.investments.length > 0) {
+          setInvestments(cloudData.investments);
+        }
+        if (!silent) {
+          showTemporaryToast('Data tersinkronisasi realtime dari Cloud! ☁️');
+        }
+      }
+    } catch (e) {
+      console.error('Failed to sync cloud data:', e);
+    }
+  };
+
+  // Check Supabase connection and initial sync + Realtime Listener on mount
   useEffect(() => {
     const initDatabase = async () => {
       const config = getSupabaseConfig();
@@ -175,31 +206,7 @@ export default function App() {
         const testRes = await testSupabaseConnection();
         if (testRes.success) {
           setDbStatus('CONNECTED');
-          try {
-            const cloudData = await fetchAllFromSupabase();
-            if (cloudData) {
-              if (cloudData.transactions && cloudData.transactions.length > 0) {
-                setTransactions(sortTransactionsDesc(cloudData.transactions));
-              }
-              if (cloudData.dreams && cloudData.dreams.length > 0) {
-                setDreams(cloudData.dreams);
-              }
-              if (cloudData.monthlyNeeds && cloudData.monthlyNeeds.length > 0) {
-                setMonthlyNeeds(cloudData.monthlyNeeds);
-              }
-              if (cloudData.investments && cloudData.investments.length > 0) {
-                setInvestments(cloudData.investments);
-              } else {
-                setInvestments((prev) => {
-                  const list = prev && prev.length > 0 ? prev : INITIAL_INVESTMENTS;
-                  list.forEach((inv) => syncItemToSupabase('investments', inv));
-                  return list;
-                });
-              }
-            }
-          } catch (e) {
-            console.error('Failed to load cloud data on startup:', e);
-          }
+          await refreshDataFromCloud(true);
         } else {
           setDbStatus('ERROR');
         }
@@ -207,7 +214,42 @@ export default function App() {
         setDbStatus('LOCAL');
       }
     };
+
     initDatabase();
+
+    // Auto-sync when window receives focus or tab becomes visible
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        refreshDataFromCloud(true);
+      }
+    };
+
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+
+    // Supabase Realtime Channel Subscription for live cross-device sync
+    const client = getSupabaseClient();
+    let channel = null;
+    if (client) {
+      try {
+        channel = client
+          .channel('realtime_app_sync')
+          .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+            refreshDataFromCloud(true);
+          })
+          .subscribe();
+      } catch (err) {
+        console.warn('Realtime channel error:', err);
+      }
+    }
+
+    return () => {
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      if (channel && client) {
+        client.removeChannel(channel);
+      }
+    };
   }, []);
 
   // Persist transactions to LocalStorage whenever updated
@@ -1074,6 +1116,7 @@ export default function App() {
               onRealize={handleRealizeInvestment}
               onDelete={handleDeleteInvestment}
               onClearHistory={handleClearInvestmentHistory}
+              onSyncCloud={() => refreshDataFromCloud(false)}
             />
           </div>
         )}
