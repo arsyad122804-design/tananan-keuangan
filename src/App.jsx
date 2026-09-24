@@ -178,14 +178,23 @@ export default function App() {
           try {
             const cloudData = await fetchAllFromSupabase();
             if (cloudData) {
-              setTransactions(sortTransactionsDesc(cloudData.transactions || []));
-              setDreams(cloudData.dreams || []);
-              setMonthlyNeeds(cloudData.monthlyNeeds || []);
+              if (cloudData.transactions && cloudData.transactions.length > 0) {
+                setTransactions(sortTransactionsDesc(cloudData.transactions));
+              }
+              if (cloudData.dreams && cloudData.dreams.length > 0) {
+                setDreams(cloudData.dreams);
+              }
+              if (cloudData.monthlyNeeds && cloudData.monthlyNeeds.length > 0) {
+                setMonthlyNeeds(cloudData.monthlyNeeds);
+              }
               if (cloudData.investments && cloudData.investments.length > 0) {
                 setInvestments(cloudData.investments);
               } else {
-                setInvestments(INITIAL_INVESTMENTS);
-                INITIAL_INVESTMENTS.forEach((inv) => syncItemToSupabase('investments', inv));
+                setInvestments((prev) => {
+                  const list = prev && prev.length > 0 ? prev : INITIAL_INVESTMENTS;
+                  list.forEach((inv) => syncItemToSupabase('investments', inv));
+                  return list;
+                });
               }
             }
           } catch (e) {
