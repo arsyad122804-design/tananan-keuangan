@@ -40,10 +40,46 @@ import {
   DEFAULT_MASTER_USER
 } from './lib/supabaseClient';
 
-// Initial empty state
+// Initial default data
 const INITIAL_MONTHLY_NEEDS = [];
 const INITIAL_DREAMS = [];
 const INITIAL_TRANSACTIONS = [];
+
+const INITIAL_INVESTMENTS = [
+  {
+    id: 'inv_emtek',
+    namaSaham: 'EMTEK',
+    modalInvestasi: 500000,
+    tanggalBeli: '2026-09-24',
+    status: 'HOLDING',
+    profitLossType: 'NONE',
+    nominalProfitLoss: 0,
+    totalKembali: 0,
+    keterangan: 'Saham EMTK'
+  },
+  {
+    id: 'inv_spacex',
+    namaSaham: 'SPACE X',
+    modalInvestasi: 1000000,
+    tanggalBeli: '2026-09-24',
+    status: 'HOLDING',
+    profitLossType: 'NONE',
+    nominalProfitLoss: 0,
+    totalKembali: 0,
+    keterangan: 'Saham Space X'
+  },
+  {
+    id: 'inv_tpia',
+    namaSaham: 'TPIA',
+    modalInvestasi: 700000,
+    tanggalBeli: '2026-09-24',
+    status: 'HOLDING',
+    profitLossType: 'NONE',
+    nominalProfitLoss: 0,
+    totalKembali: 0,
+    keterangan: 'Saham TPIA'
+  }
+];
 
 export const sortTransactionsDesc = (list) => {
   if (!Array.isArray(list)) return [];
@@ -80,7 +116,15 @@ export default function App() {
 
   const [investments, setInvestments] = useState(() => {
     const saved = localStorage.getItem('tatanan_uang_investments');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return INITIAL_INVESTMENTS;
   });
 
   const [activeTab, setActiveTab] = useState('CATATAN'); // 'CATATAN' | 'INVESTASI' | 'KEBUTUHAN' | 'IMPIAN'
@@ -137,8 +181,11 @@ export default function App() {
               setTransactions(sortTransactionsDesc(cloudData.transactions || []));
               setDreams(cloudData.dreams || []);
               setMonthlyNeeds(cloudData.monthlyNeeds || []);
-              if (cloudData.investments) {
+              if (cloudData.investments && cloudData.investments.length > 0) {
                 setInvestments(cloudData.investments);
+              } else {
+                setInvestments(INITIAL_INVESTMENTS);
+                INITIAL_INVESTMENTS.forEach((inv) => syncItemToSupabase('investments', inv));
               }
             }
           } catch (e) {
