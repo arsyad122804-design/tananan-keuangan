@@ -32,6 +32,7 @@ import { getTodayISOString, formatRupiah } from './utils/formatters';
 import { Database, LogOut, Crown, User, ShieldCheck } from 'lucide-react';
 import {
   getSupabaseConfig,
+  getSupabaseClient,
   fetchAllFromSupabase,
   syncItemToSupabase,
   testSupabaseConnection,
