@@ -2,11 +2,16 @@ import React from 'react';
 import { Wallet, TrendingUp, TrendingDown, DollarSign, ArrowUpRight, ArrowDownRight, PieChart, Target, Coins } from 'lucide-react';
 import { formatRupiah } from '../utils/formatters';
 
-export default function StatCards({ summary, isInvestor = true }) {
-  const netStockProfit = summary.totalProfitSaham - summary.totalLossSaham;
-  const netCashflow = summary.totalPemasukan - summary.totalPengeluaran;
-  const dreamSaved = summary.totalDreamTerkumpul || 0;
-  const dreamTarget = summary.totalDreamTarget || 0;
+export default function StatCards({ summary = {}, isInvestor = true }) {
+  const netStockProfit = (Number(summary?.totalProfitSaham) || 0) - (Number(summary?.totalLossSaham) || 0);
+  const netCashflow = (Number(summary?.totalPemasukan) || 0) - (Number(summary?.totalPengeluaran) || 0);
+  const dreamSaved = Number(summary?.totalDreamTerkumpul) || 0;
+  const dreamTarget = Number(summary?.totalDreamTarget) || 0;
+  const duitDibawa = Number(summary?.duitDibawa) || 0;
+  const duitSaham = Number(summary?.duitSaham) || 0;
+  const totalKekayaan = Number(summary?.totalKekayaan) || 0;
+  const totalInvestedModal = Number(summary?.totalInvestedModal) || 0;
+  const activeHoldingCount = Number(summary?.activeHoldingCount) || 0;
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 my-4 sm:my-6">

@@ -31,29 +31,32 @@ export default function InvestmentTracker({
   const [activeSubTab, setActiveSubTab] = useState('ACTIVE'); // 'ACTIVE' | 'HISTORY'
   const [searchTerm, setSearchTerm] = useState('');
 
-  const activeHoldings = investments.filter((i) => i.status !== 'CLOSED');
-  const closedTrades = investments.filter((i) => i.status === 'CLOSED');
+  const safeInvestments = Array.isArray(investments) ? investments.filter((i) => i != null && typeof i === 'object') : [];
+  const activeHoldings = safeInvestments.filter((i) => i.status !== 'CLOSED');
+  const closedTrades = safeInvestments.filter((i) => i.status === 'CLOSED');
 
   // Summary calculations
-  const totalActiveModal = activeHoldings.reduce((sum, i) => sum + (Number(i.modalInvestasi) || 0), 0);
+  const totalActiveModal = activeHoldings.reduce((sum, i) => sum + (Number(i?.modalInvestasi) || 0), 0);
   
-  const totalClosedModal = closedTrades.reduce((sum, i) => sum + (Number(i.modalInvestasi) || 0), 0);
-  const totalClosedKembali = closedTrades.reduce((sum, i) => sum + (Number(i.totalKembali) || 0), 0);
+  const totalClosedModal = closedTrades.reduce((sum, i) => sum + (Number(i?.modalInvestasi) || 0), 0);
+  const totalClosedKembali = closedTrades.reduce((sum, i) => sum + (Number(i?.totalKembali) || 0), 0);
   
   const totalProfitRealized = closedTrades
-    .filter((i) => i.profitLossType === 'PROFIT')
-    .reduce((sum, i) => sum + (Number(i.nominalProfitLoss) || 0), 0);
+    .filter((i) => i?.profitLossType === 'PROFIT')
+    .reduce((sum, i) => sum + (Number(i?.nominalProfitLoss) || 0), 0);
     
   const totalLossRealized = closedTrades
-    .filter((i) => i.profitLossType === 'LOSS')
-    .reduce((sum, i) => sum + (Number(i.nominalProfitLoss) || 0), 0);
+    .filter((i) => i?.profitLossType === 'LOSS')
+    .reduce((sum, i) => sum + (Number(i?.nominalProfitLoss) || 0), 0);
 
   const netRealizedPnl = totalProfitRealized - totalLossRealized;
 
   const currentList = activeSubTab === 'ACTIVE' ? activeHoldings : closedTrades;
   const filteredList = currentList.filter((item) =>
-    (item.namaSaham || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (item.keterangan || '').toLowerCase().includes(searchTerm.toLowerCase())
+    item && (
+      (item.namaSaham || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.keterangan || '').toLowerCase().includes(searchTerm.toLowerCase())
+    )
   );
 
   return (

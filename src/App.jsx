@@ -394,8 +394,9 @@ export default function App() {
   const activeTargetSum = dreams.filter((d) => !d.isCompleted).reduce((sum, d) => sum + (Number(d.targetBiaya) || 0), 0);
 
   // Calculate active investments modal (holding)
-  const activeHoldings = investments.filter((i) => i.status !== 'CLOSED');
-  const totalInvestedModal = activeHoldings.reduce((sum, i) => sum + (Number(i.modalInvestasi) || 0), 0);
+  const safeInvestments = Array.isArray(investments) ? investments.filter((i) => i != null && typeof i === 'object') : [];
+  const activeHoldings = safeInvestments.filter((i) => i.status !== 'CLOSED');
+  const totalInvestedModal = activeHoldings.reduce((sum, i) => sum + (Number(i?.modalInvestasi) || 0), 0);
   const activeHoldingCount = activeHoldings.length;
 
   const fullSummary = {
