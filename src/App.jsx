@@ -50,7 +50,7 @@ const INITIAL_INVESTMENTS = [
   {
     id: 'inv_emtek',
     namaSaham: 'EMTEK',
-    modalInvestasi: 500000,
+    modalInvestasi: 916999,
     tanggalBeli: '2026-09-24',
     status: 'HOLDING',
     profitLossType: 'NONE',
@@ -61,7 +61,7 @@ const INITIAL_INVESTMENTS = [
   {
     id: 'inv_spacex',
     namaSaham: 'SPACE X',
-    modalInvestasi: 1000000,
+    modalInvestasi: 1211539,
     tanggalBeli: '2026-09-24',
     status: 'HOLDING',
     profitLossType: 'NONE',
