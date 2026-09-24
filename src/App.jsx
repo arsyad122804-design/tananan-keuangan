@@ -701,6 +701,17 @@ export default function App() {
     }
   };
 
+  const handleClearInvestmentHistory = () => {
+    if (window.confirm('Kosongkan semua riwayat penjualan saham yang sudah selesai?')) {
+      const closed = investments.filter((i) => i.status === 'CLOSED');
+      setInvestments((prev) => prev.filter((i) => i.status !== 'CLOSED'));
+      closed.forEach((item) => {
+        syncItemToSupabase('investments', item.id, 'delete');
+      });
+      showTemporaryToast('Semua riwayat penjualan saham berhasil dikosongkan! 🗑️');
+    }
+  };
+
   if (!currentUser) {
     return <AuthScreen onLoginSuccess={(user) => setCurrentUser(user)} />;
   }
@@ -1000,6 +1011,7 @@ export default function App() {
               onEdit={handleEditInvestment}
               onRealize={handleRealizeInvestment}
               onDelete={handleDeleteInvestment}
+              onClearHistory={handleClearInvestmentHistory}
             />
           </div>
         )}

@@ -25,7 +25,8 @@ export default function InvestmentTracker({
   onAddNew,
   onEdit,
   onRealize,
-  onDelete
+  onDelete,
+  onClearHistory
 }) {
   const [activeSubTab, setActiveSubTab] = useState('ACTIVE'); // 'ACTIVE' | 'HISTORY'
   const [searchTerm, setSearchTerm] = useState('');
@@ -168,16 +169,29 @@ export default function InvestmentTracker({
           </button>
         </div>
 
-        {/* Search Filter */}
-        <div className="relative w-full sm:w-64">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Cari kode saham (cth: BBCA)..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-700/80 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-          />
+        {/* Search Filter & Clear History Button */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-64">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari kode saham (cth: BBCA)..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-700/80 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          {activeSubTab === 'HISTORY' && closedTrades.length > 0 && onClearHistory && (
+            <button
+              onClick={onClearHistory}
+              className="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl text-xs font-semibold transition flex items-center gap-1 shrink-0"
+              title="Kosongkan Semua Riwayat Realisasi"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Kosongkan Riwayat</span>
+            </button>
+          )}
         </div>
       </div>
 
