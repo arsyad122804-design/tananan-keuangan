@@ -687,8 +687,8 @@ export default function App() {
   };
 
   const handleMoveDreamDown = (index) => {
-    if (index >= prev.length - 1) return prev;
     setDreams((prev) => {
+      if (index >= prev.length - 1) return prev;
       const copy = [...prev];
       const temp = copy[index + 1];
       copy[index + 1] = copy[index];
