@@ -50,7 +50,7 @@ export default function LiveClock({ onDayChange }) {
         <div className="flex items-center gap-2.5 bg-slate-950/80 border border-slate-800/90 px-3.5 py-2 rounded-xl shadow-inner backdrop-blur-md shrink-0">
           <Clock className="w-4 h-4 text-emerald-400" />
           <div className="font-mono text-lg sm:text-2xl font-black tracking-widest text-emerald-400 whitespace-nowrap">
-            {hours}:<span className="text-white">{minutes}</span>:<span className="text-emerald-500 text-sm sm:text-lg">{seconds}</span>
+            {hours}:<span className="text-white">{minutes}</span>:<span className="text-emerald-400">{seconds}</span>
           </div>
         </div>
       </div>
