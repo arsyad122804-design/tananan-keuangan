@@ -129,22 +129,8 @@ export default function App() {
     const saved = localStorage.getItem('tatanan_uang_investments');
     if (saved) {
       try {
-        let parsed = JSON.parse(saved);
+        const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          parsed = parsed.map((inv) => {
-            const name = String(inv.namaSaham || '').toUpperCase().replace(/\s+/g, '');
-            if ((inv.id === 'inv_emtek' || name === 'EMTEK' || name === 'EMTK') && (inv.modalInvestasi === 500000 || !inv.modalInvestasi)) {
-              return { ...inv, modalInvestasi: 916999 };
-            }
-            if ((inv.id === 'inv_spacex' || name === 'SPACEX') && (inv.modalInvestasi === 1000000 || !inv.modalInvestasi)) {
-              return { ...inv, modalInvestasi: 1211539 };
-            }
-            if ((inv.id === 'inv_tpia' || name === 'TPIA' || name === 'TPAI') && (inv.modalInvestasi === 700000 || inv.modalInvestasi === 500000 || !inv.modalInvestasi)) {
-              return { ...inv, modalInvestasi: 967999 };
-            }
-            return inv;
-          });
-          localStorage.setItem('tatanan_uang_investments', JSON.stringify(parsed));
           return parsed;
         }
       } catch (e) {
@@ -196,7 +182,7 @@ export default function App() {
   };
 
   // Check Supabase connection and initial sync on mount
-  // Reusable Cloud Sync function
+  // Reusable Cloud Sync function with safe merging so local additions never get lost
   const refreshDataFromCloud = async (silent = true) => {
     try {
       const config = getSupabaseConfig();
@@ -206,38 +192,54 @@ export default function App() {
       if (cloudData) {
         setDbStatus('CONNECTED');
         if (cloudData.transactions && cloudData.transactions.length > 0) {
-          setTransactions(sortTransactionsDesc(cloudData.transactions));
+          setTransactions((prevLocal) => {
+            const map = new Map();
+            (cloudData.transactions || []).forEach((t) => { if (t && t.id) map.set(String(t.id), t); });
+            (prevLocal || []).forEach((t) => { if (t && t.id) map.set(String(t.id), t); });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_transactions', JSON.stringify(merged));
+            return sortTransactionsDesc(merged);
+          });
         }
         if (cloudData.dreams && cloudData.dreams.length > 0) {
-          setDreams(cloudData.dreams);
+          setDreams((prevLocal) => {
+            const map = new Map();
+            (cloudData.dreams || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
+            (prevLocal || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_dreams', JSON.stringify(merged));
+            return merged;
+          });
         }
         if (cloudData.monthlyNeeds && cloudData.monthlyNeeds.length > 0) {
-          setMonthlyNeeds(cloudData.monthlyNeeds);
+          setMonthlyNeeds((prevLocal) => {
+            const map = new Map();
+            (cloudData.monthlyNeeds || []).forEach((n) => { if (n && n.id) map.set(String(n.id), n); });
+            (prevLocal || []).forEach((n) => { if (n && n.id) map.set(String(n.id), n); });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_monthly_needs', JSON.stringify(merged));
+            return merged;
+          });
         }
         if (cloudData.debts && cloudData.debts.length > 0) {
-          setDebts(cloudData.debts);
+          setDebts((prevLocal) => {
+            const map = new Map();
+            (cloudData.debts || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
+            (prevLocal || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_debts', JSON.stringify(merged));
+            return merged;
+          });
         }
         if (cloudData.investments && cloudData.investments.length > 0) {
-          const updatedInv = cloudData.investments.map((inv) => {
-            const name = String(inv.namaSaham || '').toUpperCase().replace(/\s+/g, '');
-            if ((inv.id === 'inv_emtek' || name === 'EMTEK' || name === 'EMTK') && (inv.modalInvestasi === 500000 || !inv.modalInvestasi)) {
-              const fixed = { ...inv, modalInvestasi: 916999 };
-              syncItemToSupabase('investments', fixed);
-              return fixed;
-            }
-            if ((inv.id === 'inv_spacex' || name === 'SPACEX') && (inv.modalInvestasi === 1000000 || !inv.modalInvestasi)) {
-              const fixed = { ...inv, modalInvestasi: 1211539 };
-              syncItemToSupabase('investments', fixed);
-              return fixed;
-            }
-            if ((inv.id === 'inv_tpia' || name === 'TPIA' || name === 'TPAI') && (inv.modalInvestasi === 700000 || inv.modalInvestasi === 500000 || !inv.modalInvestasi)) {
-              const fixed = { ...inv, modalInvestasi: 967999 };
-              syncItemToSupabase('investments', fixed);
-              return fixed;
-            }
-            return inv;
+          setInvestments((prevLocal) => {
+            const map = new Map();
+            (cloudData.investments || []).forEach((inv) => { if (inv && inv.id) map.set(String(inv.id), inv); });
+            (prevLocal || []).forEach((inv) => { if (inv && inv.id) map.set(String(inv.id), inv); });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_investments', JSON.stringify(merged));
+            return merged;
           });
-          setInvestments(updatedInv);
         }
         if (!silent) {
           showTemporaryToast('Data tersinkronisasi realtime dari Cloud! ☁️');
@@ -974,6 +976,27 @@ export default function App() {
     }
   };
 
+  const handleTopUpPortofolio = (amount, note = 'Top Up Saldo Portofolio Saham') => {
+    const nominal = Number(amount) || 0;
+    if (nominal <= 0) return;
+
+    const newTx = {
+      id: Date.now().toString(),
+      tanggal: getTodayISOString(),
+      kebutuhan: note,
+      pemasukan: nominal,
+      pengeluaran: 0,
+      profitSaham: 0,
+      lossSaham: 0,
+      duitDibawa: currentDuitDibawa,
+      duitSaham: currentDuitSaham + nominal
+    };
+
+    setTransactions((prev) => sortTransactionsDesc([newTx, ...prev]));
+    syncItemToSupabase('transactions', newTx);
+    showTemporaryToast(`Saldo Portofolio Saham bertambah +${formatRupiah(nominal)}! 💰`);
+  };
+
   // Debt Handlers
   const handleSaveDebt = (formData) => {
     if (editingDebt) {
@@ -1540,6 +1563,7 @@ export default function App() {
               }}
               onEdit={handleEditInvestment}
               onTopUp={handleTopUpInvestment}
+              onTopUpPortofolio={handleTopUpPortofolio}
               onRealize={handleRealizeInvestment}
               onDelete={handleDeleteInvestment}
               onClearHistory={handleClearInvestmentHistory}
