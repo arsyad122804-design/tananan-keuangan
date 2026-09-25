@@ -1415,15 +1415,6 @@ export default function App() {
 
             {/* Top Right Action Buttons */}
             <div className="flex items-center gap-1.5 shrink-0">
-              {/* Download App Button */}
-              <button
-                onClick={handleOpenInstall}
-                className="p-2 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 text-slate-950 font-black rounded-xl text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition flex items-center justify-center cursor-pointer"
-                title="Download & Pasang Aplikasi ke HP"
-              >
-                <Download className="w-4 h-4 stroke-[2.5]" />
-              </button>
-
               {/* Database Cloud Status */}
               {isMasterAdmin && (
                 <button
