@@ -35,9 +35,6 @@ export default function InvestmentTracker({
 }) {
   const [activeSubTab, setActiveSubTab] = useState('ACTIVE'); // 'ACTIVE' | 'HISTORY'
   const [searchTerm, setSearchTerm] = useState('');
-  const [isTopUpPortoOpen, setIsTopUpPortoOpen] = useState(false);
-  const [topUpPortoAmount, setTopUpPortoAmount] = useState('');
-  const [topUpPortoNote, setTopUpPortoNote] = useState('Top Up Saldo Portofolio Saham');
 
   const safeInvestments = Array.isArray(investments) ? investments.filter((i) => i != null && typeof i === 'object') : [];
   const activeHoldings = safeInvestments.filter((i) => i.status !== 'CLOSED');
@@ -58,25 +55,6 @@ export default function InvestmentTracker({
     .reduce((sum, i) => sum + (Number(i?.nominalProfitLoss) || 0), 0);
 
   const netRealizedPnl = totalProfitRealized - totalLossRealized;
-
-  const handleConfirmTopUpPorto = (e) => {
-    e.preventDefault();
-    const num = Number(topUpPortoAmount) || 0;
-    if (num <= 0) {
-      alert('Nominal top up portofolio harus lebih dari 0!');
-      return;
-    }
-    if (onTopUpPortofolio) {
-      onTopUpPortofolio(num, topUpPortoNote || 'Top Up Saldo Portofolio Saham');
-    }
-    setTopUpPortoAmount('');
-    setIsTopUpPortoOpen(false);
-  };
-
-  const handleAddPortoPreset = (val) => {
-    const current = Number(topUpPortoAmount) || 0;
-    setTopUpPortoAmount(String(current + val));
-  };
 
   const currentList = activeSubTab === 'ACTIVE' ? activeHoldings : closedTrades;
   const filteredList = currentList.filter((item) =>
@@ -110,18 +88,7 @@ export default function InvestmentTracker({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-            {onTopUpPortofolio && (
-              <button
-                onClick={() => setIsTopUpPortoOpen(true)}
-                className="px-3.5 py-2.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 font-bold rounded-xl border border-emerald-500/30 transition flex items-center justify-center gap-1.5 text-xs sm:text-sm shrink-0 cursor-pointer shadow-sm"
-                title="Isi atau tambah saldo uang di rekening saham"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>+ Isi Saldo Saham</span>
-              </button>
-            )}
-
+          <div className="flex items-center gap-2 w-full md:w-auto">
             {onSyncCloud && (
               <button
                 onClick={onSyncCloud}
@@ -146,63 +113,58 @@ export default function InvestmentTracker({
 
         {/* 4 Metrics Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mt-5">
-          {/* 1. Saldo Portofolio (Cash Saham) */}
-          <div className="bg-slate-950/80 border border-emerald-500/30 rounded-2xl p-4 space-y-1 relative group">
-            <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
-              <span className="font-semibold uppercase tracking-wider text-[11px] text-emerald-300 truncate">
-                💵 Saldo Portofolio (Cash)
-              </span>
-              {onTopUpPortofolio && (
-                <button
-                  onClick={() => setIsTopUpPortoOpen(true)}
-                  className="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 cursor-pointer"
-                >
-                  + Top Up
-                </button>
-              )}
-            </div>
-            <h3 className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">
-              {formatRupiah(duitSaham)}
-            </h3>
-            <p className="text-[10px] text-slate-400">Uang siap dipakai beli saham</p>
-          </div>
-
-          {/* 2. Active Modal */}
-          <div className="bg-slate-950/80 border border-blue-500/30 rounded-2xl p-4 space-y-1">
-            <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
-              <span className="font-semibold uppercase tracking-wider text-[11px] text-blue-300 truncate">
+          {/* 1. Sedang Diinvestasikan (HERO CARD FOR HOLDINGS) */}
+          <div className="bg-slate-950/90 border border-blue-500/40 rounded-2xl p-4 space-y-1 relative group">
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="font-bold uppercase tracking-wider text-[11px] text-blue-300">
                 📊 Sedang Diinvestasikan
               </span>
-              <span className="text-blue-400 font-bold font-mono whitespace-nowrap shrink-0">
+              <span className="text-blue-400 font-bold font-mono text-[11px] whitespace-nowrap shrink-0 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20">
                 {activeHoldings.length} Saham
               </span>
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-blue-400 font-mono">
               {formatRupiah(totalActiveModal)}
             </h3>
-            <p className="text-[10px] text-slate-400">Modal aktif di pasar saham</p>
+            <p className="text-[10px] text-slate-400">Total modal saham yang dibeli & aktif</p>
+          </div>
+
+          {/* 2. Saldo Kas Portofolio */}
+          <div className="bg-slate-950/80 border border-emerald-500/30 rounded-2xl p-4 space-y-1">
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="font-bold uppercase tracking-wider text-[11px] text-emerald-300">
+                💵 Saldo Portofolio (Kas)
+              </span>
+              <span className="text-emerald-400 font-bold font-mono text-[11px] whitespace-nowrap shrink-0">
+                Siap Beli
+              </span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">
+              {formatRupiah(duitSaham)}
+            </h3>
+            <p className="text-[10px] text-slate-400">Uang kas di akun rekening saham</p>
           </div>
 
           {/* 3. Realized Returns */}
           <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-1">
-            <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
-              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-300 truncate">
-                💰 Total Realisasi Dijual
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="font-bold uppercase tracking-wider text-[11px] text-slate-300">
+                💰 Realisasi Selesai
               </span>
-              <span className="text-slate-400 font-bold font-mono whitespace-nowrap shrink-0">
+              <span className="text-slate-400 font-bold font-mono text-[11px] whitespace-nowrap shrink-0">
                 {closedTrades.length} Selesai
               </span>
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-white font-mono">
               {formatRupiah(totalClosedKembali)}
             </h3>
-            <p className="text-[10px] text-slate-400">Uang yang sudah cair kembali</p>
+            <p className="text-[10px] text-slate-400">Uang hasil penjualan saham</p>
           </div>
 
           {/* 4. Net PnL Realized */}
           <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-1">
-            <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
-              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-300 truncate">
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="font-bold uppercase tracking-wider text-[11px] text-slate-300">
                 📈 Net Profit / Loss
               </span>
               <span className={`text-[10px] font-bold font-mono whitespace-nowrap shrink-0 ${netRealizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -464,107 +426,6 @@ export default function InvestmentTracker({
               </div>
             );
           })}
-        </div>
-      )}
-
-      {/* Top Up Portofolio Modal */}
-      {isTopUpPortoOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
-            <div className="px-6 py-4 bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-900 border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2.5 font-bold text-white text-base">
-                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
-                  <PlusCircle className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3>Isi / Tambah Saldo Portofolio Saham</h3>
-                  <p className="text-xs text-slate-400 font-normal">Tambah modal tunai siap beli ke rekening saham</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsTopUpPortoOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleConfirmTopUpPorto} className="p-5 sm:p-6 space-y-4 text-slate-200">
-              <div className="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 space-y-1">
-                <span className="text-[11px] text-slate-400 block">Saldo Portofolio Saat Ini:</span>
-                <span className="text-lg font-black text-emerald-400 font-mono block">
-                  {formatRupiah(duitSaham)}
-                </span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-                  Nominal Tambah Saldo (Rp) *
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  required
-                  placeholder="Contoh: 1000000"
-                  value={topUpPortoAmount}
-                  onChange={(e) => setTopUpPortoAmount(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-mono text-base focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
-                  autoFocus
-                />
-                {Number(topUpPortoAmount) > 0 && (
-                  <p className="text-xs text-emerald-400 font-mono mt-1">
-                    {formatHumanRupiah(Number(topUpPortoAmount))}
-                  </p>
-                )}
-              </div>
-
-              {/* Preset Buttons */}
-              <div className="space-y-1.5">
-                <span className="text-[11px] text-slate-400 font-medium">Pilihan Cepat:</span>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {[500000, 1000000, 2000000, 5000000].map((amt) => (
-                    <button
-                      type="button"
-                      key={amt}
-                      onClick={() => handleAddPortoPreset(amt)}
-                      className="py-1.5 px-1 bg-slate-950 hover:bg-slate-800 border border-slate-700/80 hover:border-emerald-500/50 rounded-lg text-[11px] font-mono text-slate-300 hover:text-emerald-400 font-bold transition cursor-pointer"
-                    >
-                      +{amt >= 1000000 ? `${amt / 1000000}jt` : `${amt / 1000}rb`}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-                  Catatan / Keterangan
-                </label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Setor modal awal RDN / Top up gaji"
-                  value={topUpPortoNote}
-                  onChange={(e) => setTopUpPortoNote(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-white text-xs focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
-                />
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsTopUpPortoOpen(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/25 transition cursor-pointer"
-                >
-                  Tambah Saldo Sekarang 💰
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
       )}
     </div>

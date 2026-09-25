@@ -527,13 +527,19 @@ export default function App() {
     { totalPemasukan: 0, totalPengeluaran: 0, totalProfitSaham: 0, totalLossSaham: 0 }
   );
 
+  // Calculate active investments modal (holding)
+  const safeInvestments = Array.isArray(investments) ? investments.filter((i) => i != null && typeof i === 'object') : [];
+  const activeHoldings = safeInvestments.filter((i) => i.status !== 'CLOSED');
+  const totalInvestedModal = activeHoldings.reduce((sum, i) => sum + (Number(i?.modalInvestasi) || 0), 0);
+  const activeHoldingCount = activeHoldings.length;
+
   // Latest balance lookup from the latest transaction snapshot
   const sortedTransactions = sortTransactionsDesc(transactions);
   const latestItem = sortedTransactions.length > 0 ? sortedTransactions[0] : null;
 
   const currentDuitDibawa = latestItem && latestItem.duitDibawa !== undefined ? Number(latestItem.duitDibawa) || 0 : 0;
   const currentDuitSaham = latestItem && latestItem.duitSaham !== undefined ? Number(latestItem.duitSaham) || 0 : 0;
-  const totalKekayaan = currentDuitDibawa + (isInvestor ? currentDuitSaham : 0);
+  const totalKekayaan = currentDuitDibawa + (isInvestor ? (totalInvestedModal + currentDuitSaham) : 0);
 
   // Calculate monthly needs totals
   const totalKebutuhanNominal = monthlyNeeds.reduce((sum, n) => sum + (Number(n.nominal) || 0), 0);
@@ -553,12 +559,6 @@ export default function App() {
   const remainingWealthForActive = Math.max(0, totalKekayaan - completedTargetSum - totalKebutuhanTerbayar);
   const activeDreamTerkumpul = Math.min(remainingWealthForActive, activeTargetSum);
   const totalDreamTerkumpul = Math.min(totalKekayaan, completedTargetSum + activeDreamTerkumpul);
-
-  // Calculate active investments modal (holding)
-  const safeInvestments = Array.isArray(investments) ? investments.filter((i) => i != null && typeof i === 'object') : [];
-  const activeHoldings = safeInvestments.filter((i) => i.status !== 'CLOSED');
-  const totalInvestedModal = activeHoldings.reduce((sum, i) => sum + (Number(i?.modalInvestasi) || 0), 0);
-  const activeHoldingCount = activeHoldings.length;
 
   const fullSummary = {
     ...summary,
@@ -1399,7 +1399,7 @@ export default function App() {
               {isInvestor ? 'Total Kekayaan Saat Ini' : 'Total Saldo Kas'}
             </span>
             <span className="text-emerald-400 font-bold text-sm block">
-              {(isInvestor ? (currentDuitDibawa + currentDuitSaham) : currentDuitDibawa).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
+              {(isInvestor ? totalKekayaan : currentDuitDibawa).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
             </span>
           </div>
           <p className="text-[10px] text-slate-500 pt-2 text-center">© 2026 Tatanan Uang</p>
