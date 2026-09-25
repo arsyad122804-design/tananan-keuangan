@@ -244,9 +244,9 @@ export default function MonthlyNeedTracker({
                 }`}
               >
                 <div>
-                  {/* Top Bar inside Card */}
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="flex items-center gap-3">
+                  {/* 1. Header Row: Checkbox + Title on Left, Action Toolbar on Right */}
+                  <div className="flex items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800/80">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       {/* Checkbox Button */}
                       <button
                         onClick={() => {
@@ -254,11 +254,11 @@ export default function MonthlyNeedTracker({
                           onTogglePaid(item.id);
                         }}
                         disabled={!isPaid && !isAffordable}
-                        className={`p-2 rounded-xl transition flex items-center justify-center ${
+                        className={`p-2 rounded-xl transition shrink-0 flex items-center justify-center ${
                           isPaid
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-500/20'
                             : isAffordable
-                            ? 'bg-slate-800 text-slate-400 hover:text-cyan-400 border border-slate-700'
+                            ? 'bg-slate-900 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/40 border border-slate-800'
                             : 'bg-slate-900 text-slate-600 border border-slate-800 opacity-40 cursor-not-allowed'
                         }`}
                         title={
@@ -270,58 +270,33 @@ export default function MonthlyNeedTracker({
                         }
                       >
                         {isPaid ? (
-                          <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                          <CheckCircle2 className="w-5 h-5 text-emerald-400 stroke-[2.5]" />
                         ) : (
-                          <Circle className="w-6 h-6" />
+                          <Circle className="w-5 h-5" />
                         )}
                       </button>
 
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3
-                            className={`text-base font-bold ${
-                              isPaid ? 'line-through text-slate-400' : 'text-white'
-                            }`}
-                          >
-                            {item.namaKebutuhan}
-                          </h3>
-                          {isPaid ? (
-                            <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
-                              LUNAS TERBAYAR
-                            </span>
-                          ) : isAffordable ? (
-                            <span className="text-[10px] bg-cyan-500/10 text-cyan-300 font-semibold px-2 py-0.5 rounded-full border border-cyan-500/20">
-                              DANA MENCUKUPI
-                            </span>
-                          ) : (
-                            <span className="text-[10px] bg-amber-500/10 text-amber-300 font-semibold px-2 py-0.5 rounded-full border border-amber-500/20">
-                              DANA KURANG
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
-                          <span className="bg-slate-900 border border-slate-800 px-2 py-0.5 rounded text-[11px] text-cyan-300">
-                            {item.kategori || 'Tagihan'}
-                          </span>
-                          {item.tanggalJatuhTempo && (
-                            <span className="flex items-center gap-1 text-[11px]">
-                              <Calendar className="w-3 h-3 text-slate-500" />
-                              Tgl {item.tanggalJatuhTempo}
-                            </span>
-                          )}
-                        </div>
+                      {/* Title */}
+                      <div className="min-w-0 flex-1">
+                        <h3
+                          className={`text-base sm:text-lg font-extrabold truncate leading-tight tracking-wide ${
+                            isPaid ? 'line-through text-slate-400 font-medium' : 'text-white'
+                          }`}
+                          title={item.namaKebutuhan}
+                        >
+                          {item.namaKebutuhan}
+                        </h3>
                       </div>
                     </div>
 
-                    {/* Actions: Move, Edit, Delete */}
-                    <div className="flex items-center gap-1">
-                      {/* Priority Move Up/Down */}
+                    {/* Action Toolbar */}
+                    <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800/90 rounded-xl p-1 shrink-0">
                       {onMoveUp && onMoveDown && (
-                        <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5 mr-1">
+                        <>
                           <button
                             onClick={() => onMoveUp(originalIndex)}
                             disabled={originalIndex === 0}
-                            className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed rounded"
+                            className="p-1 text-slate-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed rounded-lg hover:bg-slate-800 transition"
                             title="Naikkan Urutan"
                           >
                             <ArrowUp className="w-3.5 h-3.5" />
@@ -329,24 +304,25 @@ export default function MonthlyNeedTracker({
                           <button
                             onClick={() => onMoveDown(originalIndex)}
                             disabled={originalIndex === monthlyNeeds.length - 1}
-                            className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed rounded"
+                            className="p-1 text-slate-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed rounded-lg hover:bg-slate-800 transition"
                             title="Turunkan Urutan"
                           >
                             <ArrowDown className="w-3.5 h-3.5" />
                           </button>
-                        </div>
+                          <div className="w-[1px] h-3.5 bg-slate-800 mx-0.5" />
+                        </>
                       )}
 
                       <button
                         onClick={() => onEdit(item)}
-                        className="p-1.5 text-slate-400 hover:text-cyan-400 hover:bg-slate-800 rounded-lg transition"
+                        className="p-1 text-slate-400 hover:text-cyan-400 hover:bg-slate-800 rounded-lg transition"
                         title="Edit Kebutuhan"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => onDelete(item.id)}
-                        className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition"
+                        className="p-1 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition"
                         title="Hapus Kebutuhan"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -354,8 +330,43 @@ export default function MonthlyNeedTracker({
                     </div>
                   </div>
 
+                  {/* 2. Sub-Row: Badges (Status, Kategori, Tanggal) */}
+                  <div className="flex flex-wrap items-center gap-2 mt-3 mb-3">
+                    {/* Status Pill Badge */}
+                    {isPaid ? (
+                      <span className="whitespace-nowrap shrink-0 inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-500/15 text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>LUNAS TERBAYAR</span>
+                      </span>
+                    ) : isAffordable ? (
+                      <span className="whitespace-nowrap shrink-0 inline-flex items-center gap-1 text-[11px] font-bold bg-cyan-500/15 text-cyan-300 px-2.5 py-1 rounded-lg border border-cyan-500/30 shadow-sm shadow-cyan-500/5">
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>DANA MENCUKUPI</span>
+                      </span>
+                    ) : (
+                      <span className="whitespace-nowrap shrink-0 inline-flex items-center gap-1 text-[11px] font-bold bg-amber-500/15 text-amber-300 px-2.5 py-1 rounded-lg border border-amber-500/30">
+                        <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
+                        <span>DANA KURANG</span>
+                      </span>
+                    )}
+
+                    {/* Category Pill Badge */}
+                    <span className="whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-cyan-300 text-[11px] font-medium px-2.5 py-1 rounded-lg">
+                      <Tag className="w-3 h-3 text-cyan-400" />
+                      <span>{item.kategori || 'Tagihan'}</span>
+                    </span>
+
+                    {/* Due Date Pill Badge */}
+                    {item.tanggalJatuhTempo && (
+                      <span className="whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 text-[11px] text-slate-300 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg">
+                        <Calendar className="w-3 h-3 text-slate-400" />
+                        <span>Tgl {item.tanggalJatuhTempo}</span>
+                      </span>
+                    )}
+                  </div>
+
                   {/* Nominal Display Box */}
-                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex items-center justify-between mt-3">
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex items-center justify-between mt-2">
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold block">
                         Nominal Rutin
