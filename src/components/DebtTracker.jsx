@@ -33,10 +33,13 @@ export default function DebtTracker({
   onMoveUp,
   onMoveDown,
   onPayOffDebt,
+  onPayAllAffordable,
   onPayAllAffordableDebts
 }) {
   const [filter, setFilter] = useState('ALL'); // 'ALL' | 'READY' | 'UNREADY'
   const [searchTerm, setSearchTerm] = useState('');
+
+  const handlePayAll = onPayAllAffordable || onPayAllAffordableDebts;
 
   // 1. Calculations of Wealth & Available Pool
   const totalKekayaanVal = Number(totalKekayaan) || 0;
@@ -140,9 +143,9 @@ export default function DebtTracker({
 
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           {/* Quick Action: Pay All Affordable Debts */}
-          {readyDebts.length > 1 && onPayAllAffordableDebts && (
+          {readyDebts.length > 1 && handlePayAll && (
             <button
-              onClick={onPayAllAffordableDebts}
+              onClick={handlePayAll}
               className="px-3.5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition flex items-center gap-1.5 text-xs whitespace-nowrap"
             >
               <CheckCheck className="w-4 h-4 stroke-[3]" />
