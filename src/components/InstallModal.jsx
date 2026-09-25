@@ -5,8 +5,12 @@ export default function InstallModal({ isOpen, onClose, onPWAInstall, canPrompt 
   if (!isOpen) return null;
 
   const handleDownloadBat = () => {
+    const liveUrl = typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost')
+      ? window.location.origin
+      : 'https://tananan-keuangan.vercel.app/';
+
     const element = document.createElement("a");
-    const batContent = `@echo off\ntitle Tatanan Uang\nstart http://localhost:3000\nexit`;
+    const batContent = `@echo off\ntitle Tatanan Uang\necho Membuka Aplikasi Tatanan Uang...\nstart ${liveUrl}\nexit`;
     const file = new Blob([batContent], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
     element.download = "Buka_Tatanan_Uang.bat";

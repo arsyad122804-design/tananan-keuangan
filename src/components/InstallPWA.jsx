@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
 
 export const downloadLauncherFile = () => {
+  const liveUrl = typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost')
+    ? window.location.origin
+    : 'https://tananan-keuangan.vercel.app/';
+
   const element = document.createElement("a");
-  const batContent = `@echo off\ntitle Tatanan Uang\necho Membuka Aplikasi Tatanan Uang...\nstart http://localhost:3000\nexit`;
+  const batContent = `@echo off\ntitle Tatanan Uang\necho Membuka Aplikasi Tatanan Uang...\nstart ${liveUrl}\nexit`;
   const file = new Blob([batContent], { type: 'text/plain' });
   element.href = URL.createObjectURL(file);
   element.download = "Buka_Tatanan_Uang.bat";
@@ -38,18 +42,19 @@ export function useInstallPWA() {
   }, []);
 
   const triggerInstall = async () => {
-    // 1. Trigger browser PWA install prompt if available
+    // Trigger browser PWA install prompt if available (Android WebAPK / Chrome / Edge)
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setIsInstalled(true);
+      try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          setIsInstalled(true);
+        }
+        setDeferredPrompt(null);
+      } catch (e) {
+        console.warn('Install prompt error:', e);
       }
-      setDeferredPrompt(null);
     }
-
-    // 2. Always trigger direct file download of the launcher file (No browser alert popups)
-    downloadLauncherFile();
   };
 
   return { triggerInstall, isInstalled, canPrompt: !!deferredPrompt };
@@ -62,11 +67,11 @@ export default function InstallPWA({ triggerInstall, isInstalled, variant = 'def
     return (
       <button
         onClick={triggerInstall}
-        className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
-        title="Download File Peluncur & Install Aplikasi di Laptop / HP"
+        className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer"
+        title="Install Aplikasi Tatanan Uang"
       >
         <Download className="w-4 h-4" />
-        <span>Download App</span>
+        <span>Install Aplikasi</span>
       </button>
     );
   }
@@ -74,12 +79,12 @@ export default function InstallPWA({ triggerInstall, isInstalled, variant = 'def
   return (
     <button
       onClick={triggerInstall}
-      className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 transition flex items-center gap-1.5"
-      title="Download File Peluncur & Install Aplikasi di Laptop / HP"
+      className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 transition flex items-center gap-1.5 cursor-pointer"
+      title="Install Aplikasi Tatanan Uang"
     >
       <Download className="w-4 h-4" />
-      <span className="hidden sm:inline">Download App</span>
-      <span className="sm:hidden">Download</span>
+      <span className="hidden sm:inline">Install Aplikasi</span>
+      <span className="sm:hidden">Install</span>
     </button>
   );
 }
