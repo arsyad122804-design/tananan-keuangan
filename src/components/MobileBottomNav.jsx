@@ -49,13 +49,13 @@ export default function MobileBottomNav({ activeTab, setActiveTab, onAddNew, isI
           <span className="truncate">Kebutuhan</span>
         </button>
 
-        {/* + Tambah Data (Main Action Button) */}
+        {/* + Tambah Data (Main Action Button) - Terpasang Rapi & Lurus di Tengah */}
         <button
           onClick={onAddNew}
-          className="flex flex-col items-center justify-center -mt-5 bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 rounded-full w-11 h-11 sm:w-12 sm:h-12 p-2 shadow-lg shadow-emerald-500/30 active:scale-95 transition shrink-0 mx-0.5"
+          className="flex items-center justify-center bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 rounded-full w-10 h-10 shadow-md shadow-emerald-500/25 active:scale-90 hover:scale-105 transition shrink-0 mx-1"
           title="Tambah Catatan Baru"
         >
-          <PlusCircle className="w-6 h-6 stroke-[2.5]" />
+          <PlusCircle className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
         </button>
 
         {/* Layer 2: Target Impian 🎯 */}
