@@ -797,52 +797,154 @@ export default function App() {
           ? `🎉 Saham ${formData.namaSaham} Dijual Untung! Modal + Profit (${formatRupiah(totalKembali)}) kembali ke Portofolio.`
           : `⚠️ Saham ${formData.namaSaham} Dijual Cut Loss -${formatRupiah(pnl)}. Sisa modal (${formatRupiah(totalKembali)}) kembali ke Portofolio.`
       );
+    } else if (mode === 'TOPUP') {
+      // Top-up modal to an existing stock
+      const topUpNominal = Number(formData.topUpNominal) || 0;
+      const newTotalModal = Number(formData.modalInvestasi) || ((Number(editingInvestment?.modalInvestasi) || 0) + topUpNominal);
+
+      const updated = {
+        ...editingInvestment,
+        modalInvestasi: newTotalModal,
+        keterangan: formData.keterangan || editingInvestment.keterangan
+      };
+
+      setInvestments((prev) =>
+        prev.map((i) => (i.id === editingInvestment.id ? updated : i))
+      );
+      syncItemToSupabase('investments', updated);
+      setEditingInvestment(null);
+
+      // Deduct topUpNominal from Portofolio balance and record purchase transaction
+      if (topUpNominal > 0) {
+        const topUpTx = {
+          id: Date.now().toString(),
+          tanggal: formData.tanggalBeli || getTodayISOString(),
+          kebutuhan: `Beli Tambahan Saham ${formData.namaSaham}`,
+          pemasukan: 0,
+          pengeluaran: 0,
+          profitSaham: 0,
+          lossSaham: 0,
+          duitDibawa: currentDuitDibawa,
+          duitSaham: Math.max(0, currentDuitSaham - topUpNominal)
+        };
+        setTransactions((prev) => sortTransactionsDesc([topUpTx, ...prev]));
+        syncItemToSupabase('transactions', topUpTx);
+      }
+
+      showTemporaryToast(`Modal saham ${formData.namaSaham} bertambah +${formatRupiah(topUpNominal)} (Total: ${formatRupiah(newTotalModal)})! 📈`);
     } else if (editingInvestment) {
+      // Edit existing stock
+      const oldModal = Number(editingInvestment.modalInvestasi) || 0;
+      const newModal = Number(formData.modalInvestasi) || 0;
+      const modalDiff = newModal - oldModal;
+
       const updated = { ...editingInvestment, ...formData };
       setInvestments((prev) =>
         prev.map((i) => (i.id === editingInvestment.id ? updated : i))
       );
       syncItemToSupabase('investments', updated);
       setEditingInvestment(null);
-      showTemporaryToast(`Saham ${formData.namaSaham} berhasil diperbarui!`);
-    } else {
-      // New investment purchase
-      const modal = Number(formData.modalInvestasi) || 0;
-      const newInv = {
-        id: 'inv_' + Date.now().toString(),
-        status: 'HOLDING',
-        profitLossType: 'NONE',
-        nominalProfitLoss: 0,
-        totalKembali: 0,
-        ...formData
-      };
-      setInvestments((prev) => [newInv, ...prev]);
-      syncItemToSupabase('investments', newInv);
 
-      // Record purchase transaction in Catatan Keuangan & deduct from Portofolio balance
-      if (modal > 0) {
-        const buyTx = {
+      // If modal was increased, deduct difference from Portofolio
+      if (modalDiff > 0) {
+        const addTx = {
           id: Date.now().toString(),
           tanggal: formData.tanggalBeli || getTodayISOString(),
-          kebutuhan: `Beli Saham ${formData.namaSaham}`,
+          kebutuhan: `Beli Tambahan Saham ${formData.namaSaham}`,
           pemasukan: 0,
           pengeluaran: 0,
           profitSaham: 0,
           lossSaham: 0,
           duitDibawa: currentDuitDibawa,
-          duitSaham: Math.max(0, currentDuitSaham - modal)
+          duitSaham: Math.max(0, currentDuitSaham - modalDiff)
         };
-        setTransactions((prev) => sortTransactionsDesc([buyTx, ...prev]));
-        syncItemToSupabase('transactions', buyTx);
+        setTransactions((prev) => sortTransactionsDesc([addTx, ...prev]));
+        syncItemToSupabase('transactions', addTx);
+        showTemporaryToast(`Modal saham ${formData.namaSaham} bertambah +${formatRupiah(modalDiff)} (Total: ${formatRupiah(newModal)})! 📈`);
+      } else {
+        showTemporaryToast(`Saham ${formData.namaSaham} berhasil diperbarui!`);
       }
+    } else {
+      // New investment purchase: check if existing holding with same name exists
+      const modal = Number(formData.modalInvestasi) || 0;
+      const cleanName = formData.namaSaham.toUpperCase().trim();
+      const existingHolding = investments.find(
+        (i) => i.status !== 'CLOSED' && (i.namaSaham || '').toUpperCase().trim() === cleanName
+      );
 
-      showTemporaryToast(`Saham ${formData.namaSaham} modal ${formatRupiah(modal)} berhasil dicatat! 📈`);
+      if (existingHolding) {
+        const oldModal = Number(existingHolding.modalInvestasi) || 0;
+        const newTotal = oldModal + modal;
+        const updated = {
+          ...existingHolding,
+          modalInvestasi: newTotal,
+          keterangan: formData.keterangan || existingHolding.keterangan
+        };
+
+        setInvestments((prev) =>
+          prev.map((i) => (i.id === existingHolding.id ? updated : i))
+        );
+        syncItemToSupabase('investments', updated);
+
+        if (modal > 0) {
+          const buyTx = {
+            id: Date.now().toString(),
+            tanggal: formData.tanggalBeli || getTodayISOString(),
+            kebutuhan: `Beli Tambahan Saham ${cleanName}`,
+            pemasukan: 0,
+            pengeluaran: 0,
+            profitSaham: 0,
+            lossSaham: 0,
+            duitDibawa: currentDuitDibawa,
+            duitSaham: Math.max(0, currentDuitSaham - modal)
+          };
+          setTransactions((prev) => sortTransactionsDesc([buyTx, ...prev]));
+          syncItemToSupabase('transactions', buyTx);
+        }
+
+        showTemporaryToast(`Modal saham ${cleanName} bertambah +${formatRupiah(modal)} (Total: ${formatRupiah(newTotal)})! 📈`);
+      } else {
+        const newInv = {
+          id: 'inv_' + Date.now().toString(),
+          status: 'HOLDING',
+          profitLossType: 'NONE',
+          nominalProfitLoss: 0,
+          totalKembali: 0,
+          ...formData
+        };
+        setInvestments((prev) => [newInv, ...prev]);
+        syncItemToSupabase('investments', newInv);
+
+        if (modal > 0) {
+          const buyTx = {
+            id: Date.now().toString(),
+            tanggal: formData.tanggalBeli || getTodayISOString(),
+            kebutuhan: `Beli Saham ${formData.namaSaham}`,
+            pemasukan: 0,
+            pengeluaran: 0,
+            profitSaham: 0,
+            lossSaham: 0,
+            duitDibawa: currentDuitDibawa,
+            duitSaham: Math.max(0, currentDuitSaham - modal)
+          };
+          setTransactions((prev) => sortTransactionsDesc([buyTx, ...prev]));
+          syncItemToSupabase('transactions', buyTx);
+        }
+
+        showTemporaryToast(`Saham ${formData.namaSaham} modal ${formatRupiah(modal)} berhasil dicatat! 📈`);
+      }
     }
   };
 
   const handleRealizeInvestment = (item) => {
     setEditingInvestment(item);
     setInvestmentModalMode('REALIZE');
+    setIsInvestmentModalOpen(true);
+  };
+
+  const handleTopUpInvestment = (item) => {
+    setEditingInvestment(item);
+    setInvestmentModalMode('TOPUP');
     setIsInvestmentModalOpen(true);
   };
 
@@ -1362,6 +1464,7 @@ export default function App() {
                 setIsInvestmentModalOpen(true);
               }}
               onEdit={handleEditInvestment}
+              onTopUp={handleTopUpInvestment}
               onRealize={handleRealizeInvestment}
               onDelete={handleDeleteInvestment}
               onClearHistory={handleClearInvestmentHistory}
