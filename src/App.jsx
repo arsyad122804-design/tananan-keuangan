@@ -509,7 +509,7 @@ export default function App() {
 
   const currentDuitDibawa = latestItem && latestItem.duitDibawa !== undefined ? Number(latestItem.duitDibawa) || 0 : 0;
   const currentDuitSaham = latestItem && latestItem.duitSaham !== undefined ? Number(latestItem.duitSaham) || 0 : 0;
-  const totalKekayaan = currentDuitDibawa + (isInvestor ? (totalInvestedModal + currentDuitSaham) : 0);
+  const totalKekayaan = currentDuitDibawa + (isInvestor ? currentDuitSaham : 0);
 
   // Calculate monthly needs totals
   const totalKebutuhanNominal = monthlyNeeds.reduce((sum, n) => sum + (Number(n.nominal) || 0), 0);

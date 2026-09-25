@@ -52,29 +52,29 @@ export default function StatCards({ summary = {}, isInvestor = true }) {
       </div>
 
       {/* 3. Portofolio (Hanya untuk Investor) */}
-      {/* 3. Investasi Saham (Hanya untuk Investor) */}
       {isInvestor && (
         <div className="col-span-1 bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-5 shadow-lg relative overflow-hidden group hover:border-blue-500/50 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-slate-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider">Investasi Saham</span>
+            <span className="text-slate-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider">Portofolio</span>
             <div className="p-2 bg-blue-500/10 rounded-xl text-blue-400 group-hover:scale-110 transition-transform">
               <PieChart className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
           <div className="mt-2 sm:mt-3">
             <h3 className="text-base sm:text-2xl font-bold text-blue-400 tracking-tight font-mono">
-              {formatRupiah(summary.totalInvestedModal > 0 ? summary.totalInvestedModal : summary.duitSaham)}
+              {formatRupiah(summary.duitSaham)}
             </h3>
-            <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">
-              {summary.activeHoldingCount > 0 ? `${summary.activeHoldingCount} Saham Sedang Diinvestasikan` : 'Modal Saham Aktif'}
-            </p>
+            <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Saldo Portofolio Saham</p>
 
-            {/* Breakdown Rincian: Kas Sisa & Profit */}
+            {/* Breakdown Rincian: Total Beli & Profit */}
             <div className="mt-2.5 pt-2 border-t border-slate-800/80 space-y-1 text-[10px] sm:text-[11px] font-mono">
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">Kas Sisa:</span>
-                <span className="text-emerald-400 font-bold">
-                  {formatRupiah(summary.duitSaham || 0)}
+                <span className="text-slate-400">Total Beli:</span>
+                <span className="text-blue-300 font-bold">
+                  {formatRupiah(summary.totalInvestedModal || 0)}
+                  {summary.activeHoldingCount > 0 && (
+                    <span className="text-[9px] text-slate-400 font-normal ml-1">({summary.activeHoldingCount} saham)</span>
+                  )}
                 </span>
               </div>
               <div className="flex items-center justify-between">
