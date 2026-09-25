@@ -1385,95 +1385,107 @@ export default function App() {
 
       {/* 2. MAIN CONTENT AREA (Offset by lg:pl-72 for Laptop Sidebar) */}
       <main className="flex-1 lg:pl-72 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Mobile Header Top Bar (Brand, User Info & Database Status) */}
-        <div className="lg:hidden flex items-center justify-between pb-3.5 mb-4 border-b border-slate-800/80">
-          <div className="flex items-center gap-3 min-w-0">
-            {/* Glossy Brand Icon */}
-            <div className="relative group shrink-0">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-2xl blur-xs opacity-50"></div>
-              <div className="relative w-10 h-10 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center text-slate-950 shadow-md shadow-emerald-500/20">
-                <TrendingUp className="w-5 h-5 stroke-[2.5]" />
+        {/* Mobile Header (Clean, Premium 2-Tier Layout) */}
+        <div className="lg:hidden pb-3 mb-4 border-b border-slate-800/80 space-y-2.5">
+          {/* Row 1: Brand Title on Left, Action Icons on Right */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              {/* Glossy Brand Icon */}
+              <div className="relative group shrink-0">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-xl blur-xs opacity-50"></div>
+                <div className="relative w-9 h-9 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center text-slate-950 shadow-md shadow-emerald-500/20">
+                  <TrendingUp className="w-5 h-5 stroke-[2.5]" />
+                </div>
+              </div>
+
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h1 className="text-sm sm:text-base font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-300 leading-none truncate">
+                    TATANAN UANG
+                  </h1>
+                  {isMasterAdmin && (
+                    <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20 shrink-0" />
+                  )}
+                </div>
+                <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block mt-0.5">
+                  Dashboard Keuangan
+                </span>
               </div>
             </div>
 
-            <div className="min-w-0">
-              {/* App Brand Title */}
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-sm sm:text-base font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-300 leading-none truncate">
-                  TATANAN UANG
-                </h1>
-                {isMasterAdmin && (
-                  <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20 shrink-0 animate-pulse" />
-                )}
-              </div>
+            {/* Top Right Action Buttons */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {/* Download App Button */}
+              <button
+                onClick={handleOpenInstall}
+                className="p-2 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 text-slate-950 font-black rounded-xl text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition flex items-center justify-center cursor-pointer"
+                title="Download & Pasang Aplikasi ke HP"
+              >
+                <Download className="w-4 h-4 stroke-[2.5]" />
+              </button>
 
-              {/* User Name & Mode Toggle Badges */}
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="text-[10px] font-bold text-slate-300 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-md truncate max-w-[120px]">
-                  {currentUser.namaLengkap ? currentUser.namaLengkap.replace(' (Master Admin)', '') : currentUser.username}
-                </span>
-
+              {/* Database Cloud Status */}
+              {isMasterAdmin && (
                 <button
-                  type="button"
-                  onClick={handleToggleInvestorMode}
-                  className={`text-[10px] px-2 py-0.5 rounded-md font-bold inline-flex items-center gap-1 border transition-all active:scale-95 cursor-pointer shadow-sm whitespace-nowrap shrink-0 ${
-                    isInvestor
-                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                      : 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
-                  }`}
-                  title="Sentuh untuk ganti Mode Investor / Reguler"
+                  onClick={() => setIsDbModalOpen(true)}
+                  className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:border-slate-700 transition shadow-sm"
+                  title="Database Cloud Supabase"
                 >
-                  {isInvestor ? (
-                    <>
-                      <TrendingUp className="w-3 h-3 text-emerald-400 shrink-0" />
-                      <span className="whitespace-nowrap">Investor</span>
-                    </>
-                  ) : (
-                    <>
-                      <Wallet className="w-3 h-3 text-cyan-400 shrink-0" />
-                      <span className="whitespace-nowrap">Reguler</span>
-                    </>
-                  )}
+                  <Database className={`w-4 h-4 ${dbStatus === 'CONNECTED' ? 'text-emerald-400' : 'text-slate-400'}`} />
                 </button>
-              </div>
+              )}
+
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 rounded-xl bg-slate-900 border border-slate-800 transition"
+                title="Keluar"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
-            {/* Download/Install App Button for Mobile */}
-            <button
-              onClick={handleOpenInstall}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 text-slate-950 font-black text-[11px] shadow-md shadow-emerald-500/25 active:scale-95 transition shrink-0 cursor-pointer"
-              title="Download & Pasang Aplikasi ke Layar HP"
-            >
-              <Download className="w-3.5 h-3.5 stroke-[3]" />
-              <span>Download</span>
-            </button>
-
-            {/* Database Cloud Status Pill for Mobile - KHUSUS FIKRI */}
-            {isMasterAdmin && (
-              <button
-                onClick={() => setIsDbModalOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-semibold text-slate-300 hover:border-slate-700 transition shadow-sm"
-              >
-                <Database className="w-3.5 h-3.5 text-emerald-400" />
-                {dbStatus === 'CONNECTED' ? (
-                  <span className="text-emerald-400 font-bold text-[10px] flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Cloud
+          {/* Row 2: User Status & Mode Switcher Bar */}
+          <div className="flex items-center justify-between gap-2 bg-slate-900/90 border border-slate-800/80 px-3 py-1.5 rounded-xl shadow-sm">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-5 h-5 rounded-md bg-emerald-500/15 text-emerald-400 font-bold flex items-center justify-center text-[10px] shrink-0 border border-emerald-500/30">
+                {isMasterAdmin ? '👑' : '👤'}
+              </div>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-xs font-extrabold text-white truncate">
+                  {currentUser.namaLengkap ? currentUser.namaLengkap.replace(' (Master Admin)', '') : currentUser.username}
+                </span>
+                {isMasterAdmin && (
+                  <span className="text-[8px] text-amber-400 font-black bg-amber-400/10 px-1 py-0.2 rounded border border-amber-400/20 shrink-0">
+                    PRO
                   </span>
-                ) : (
-                  <span className="text-slate-400 text-[10px]">Cloud DB</span>
                 )}
-              </button>
-            )}
+              </div>
+            </div>
 
             <button
-              onClick={handleLogout}
-              className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 rounded-xl bg-slate-900 border border-slate-800 transition"
-              title="Keluar"
+              type="button"
+              onClick={handleToggleInvestorMode}
+              className={`text-[10px] px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1 border transition-all active:scale-95 cursor-pointer shrink-0 shadow-sm ${
+                isInvestor
+                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                  : 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
+              }`}
+              title="Sentuh untuk ganti Mode Investor / Reguler"
             >
-              <LogOut className="w-4 h-4" />
+              {isInvestor ? (
+                <>
+                  <TrendingUp className="w-3 h-3 text-emerald-400 shrink-0" />
+                  <span className="whitespace-nowrap font-bold">Mode Investor</span>
+                </>
+              ) : (
+                <>
+                  <Wallet className="w-3 h-3 text-cyan-400 shrink-0" />
+                  <span className="whitespace-nowrap font-bold">Mode Reguler</span>
+                </>
+              )}
+              <span className="text-[8px] text-slate-400 pl-0.5">⇄</span>
             </button>
           </div>
         </div>
