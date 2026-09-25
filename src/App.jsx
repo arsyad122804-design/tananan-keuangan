@@ -156,54 +156,24 @@ export default function App() {
       if (cloudData) {
         setDbStatus('CONNECTED');
         if (Array.isArray(cloudData.transactions)) {
-          setTransactions((prevLocal) => {
-            const map = new Map();
-            (cloudData.transactions || []).forEach((t) => { if (t && t.id) map.set(String(t.id), t); });
-            (prevLocal || []).forEach((t) => { if (t && t.id) map.set(String(t.id), t); });
-            const merged = Array.from(map.values());
-            localStorage.setItem('tatanan_uang_transactions', JSON.stringify(merged));
-            return sortTransactionsDesc(merged);
-          });
+          setTransactions(sortTransactionsDesc(cloudData.transactions));
+          localStorage.setItem('tatanan_uang_transactions', JSON.stringify(cloudData.transactions));
         }
         if (Array.isArray(cloudData.dreams)) {
-          setDreams((prevLocal) => {
-            const map = new Map();
-            (cloudData.dreams || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
-            (prevLocal || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
-            const merged = Array.from(map.values());
-            localStorage.setItem('tatanan_uang_dreams', JSON.stringify(merged));
-            return merged;
-          });
+          setDreams(cloudData.dreams);
+          localStorage.setItem('tatanan_uang_dreams', JSON.stringify(cloudData.dreams));
         }
         if (Array.isArray(cloudData.monthlyNeeds)) {
-          setMonthlyNeeds((prevLocal) => {
-            const map = new Map();
-            (cloudData.monthlyNeeds || []).forEach((n) => { if (n && n.id) map.set(String(n.id), n); });
-            (prevLocal || []).forEach((n) => { if (n && n.id) map.set(String(n.id), n); });
-            const merged = Array.from(map.values());
-            localStorage.setItem('tatanan_uang_monthly_needs', JSON.stringify(merged));
-            return merged;
-          });
+          setMonthlyNeeds(cloudData.monthlyNeeds);
+          localStorage.setItem('tatanan_uang_monthly_needs', JSON.stringify(cloudData.monthlyNeeds));
         }
         if (Array.isArray(cloudData.debts)) {
-          setDebts((prevLocal) => {
-            const map = new Map();
-            (cloudData.debts || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
-            (prevLocal || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
-            const merged = Array.from(map.values());
-            localStorage.setItem('tatanan_uang_debts', JSON.stringify(merged));
-            return merged;
-          });
+          setDebts(cloudData.debts);
+          localStorage.setItem('tatanan_uang_debts', JSON.stringify(cloudData.debts));
         }
         if (Array.isArray(cloudData.investments)) {
-          setInvestments((prevLocal) => {
-            const map = new Map();
-            (cloudData.investments || []).forEach((i) => { if (i && i.id) map.set(String(i.id), i); });
-            (prevLocal || []).forEach((i) => { if (i && i.id) map.set(String(i.id), i); });
-            const merged = Array.from(map.values());
-            localStorage.setItem('tatanan_uang_investments', JSON.stringify(merged));
-            return merged;
-          });
+          setInvestments(cloudData.investments);
+          localStorage.setItem('tatanan_uang_investments', JSON.stringify(cloudData.investments));
         }
         if (!silent) {
           showTemporaryToast('Data tersinkronisasi realtime dari Cloud! ☁️');
