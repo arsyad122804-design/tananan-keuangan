@@ -1157,41 +1157,74 @@ export default function App() {
           </div>
 
           {/* User Profile Card */}
-          <div className="bg-slate-950/90 border border-slate-800/90 p-3.5 rounded-2xl flex items-center justify-between gap-2.5 shadow-md">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center shrink-0 border border-emerald-500/20">
-                {isMasterAdmin ? (
-                  <Crown className="w-4 h-4 text-amber-400 fill-amber-400/20" />
-                ) : (
-                  <User className="w-4 h-4 text-emerald-400" />
-                )}
+          <div className="bg-gradient-to-b from-slate-900/90 to-slate-950/90 border border-slate-800/90 p-3.5 rounded-2xl shadow-lg space-y-2.5">
+            <div className="flex items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="relative shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 text-emerald-400 font-bold flex items-center justify-center border border-emerald-500/30 shadow-inner">
+                    {isMasterAdmin ? (
+                      <Crown className="w-5 h-5 text-amber-400 fill-amber-400/20" />
+                    ) : (
+                      <User className="w-5 h-5 text-emerald-400" />
+                    )}
+                  </div>
+                  {isMasterAdmin && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-slate-950"></span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-black text-white truncate block">
+                      {currentUser.namaLengkap ? currentUser.namaLengkap.replace(' (Master Admin)', '') : currentUser.username}
+                    </span>
+                    {isMasterAdmin && (
+                      <span className="text-[9px] text-amber-400 font-extrabold bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20 shrink-0">
+                        PRO
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-medium block truncate">
+                    {currentUser.username ? `@${currentUser.username}` : 'Akun Utama'}
+                  </span>
+                </div>
               </div>
-              <div className="min-w-0">
-                <span className="text-xs font-extrabold text-white truncate block">
-                  {currentUser.namaLengkap ? currentUser.namaLengkap.replace(' (Master Admin)', '') : currentUser.username}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleToggleInvestorMode}
-                  title="Klik untuk ganti mode Investor / Reguler"
-                  className={`text-[10px] px-2 py-0.5 rounded-md font-bold inline-flex items-center gap-1 mt-1 transition-all hover:scale-105 active:scale-95 cursor-pointer border ${
-                    isInvestor
-                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                      : 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
-                  }`}
-                >
-                  {isMasterAdmin && <span className="text-amber-400">👑</span>}
-                  <span>{isInvestor ? '📈 Mode Investor' : '💵 Mode Reguler'}</span>
-                </button>
-              </div>
+
+              <button
+                onClick={handleLogout}
+                className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30 rounded-xl bg-slate-900/80 border border-slate-800 transition shrink-0"
+                title="Keluar dari akun"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
 
+            {/* Mode Toggle Button Full-Width Single Line */}
             <button
-              onClick={handleLogout}
-              className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 rounded-xl bg-slate-900 border border-slate-800 transition"
-              title="Keluar dari akun"
+              type="button"
+              onClick={handleToggleInvestorMode}
+              title="Klik untuk ganti mode Investor / Reguler"
+              className={`w-full py-1.5 px-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all duration-200 border cursor-pointer ${
+                isInvestor
+                  ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-500/30 shadow-sm'
+                  : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border-cyan-500/30 shadow-sm'
+              }`}
             >
-              <LogOut className="w-4 h-4" />
+              <div className="flex items-center gap-1.5 whitespace-nowrap">
+                {isInvestor ? (
+                  <>
+                    <TrendingUp className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="font-semibold text-[11px]">Mode Investor</span>
+                  </>
+                ) : (
+                  <>
+                    <Wallet className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                    <span className="font-semibold text-[11px]">Mode Reguler</span>
+                  </>
+                )}
+              </div>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-slate-950/60 font-mono text-slate-400 border border-slate-800">
+                Ganti ⇄
+              </span>
             </button>
           </div>
 
