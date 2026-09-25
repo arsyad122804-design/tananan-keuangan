@@ -386,22 +386,23 @@ export default function InvestmentTracker({
                     </span>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
                       onClick={() => onTopUp ? onTopUp(item) : onEdit(item)}
-                      className="py-2.5 px-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 active:scale-95 cursor-pointer"
-                      title="Tambah modal / beli lagi saham ini"
+                      className="py-2.5 px-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/15 active:scale-95 cursor-pointer truncate"
+                      title="Tambah modal beli saham ini"
                     >
-                      <PlusCircle className="w-3.5 h-3.5 stroke-[2.5]" />
-                      <span>+ Tambah Modal</span>
+                      <Plus className="w-3.5 h-3.5 stroke-[3] shrink-0" />
+                      <span className="truncate">Tambah Modal</span>
                     </button>
 
                     <button
                       onClick={() => onRealize(item)}
-                      className="py-2.5 px-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/20 active:scale-95 cursor-pointer"
+                      className="py-2.5 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/20 active:scale-95 cursor-pointer truncate"
+                      title="Jual atau realisasikan profit/loss saham ini"
                     >
-                      <span>⚡ Jual / Realisasi</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <span className="truncate">Jual / Realisasi</span>
+                      <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                     </button>
                   </div>
                 )}
