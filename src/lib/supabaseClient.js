@@ -496,7 +496,7 @@ export const fetchAllFromSupabase = async () => {
       });
     }
 
-    let finalInvestments = null;
+    let finalInvestments = [];
     if (invRes.data && Array.isArray(invRes.data) && invRes.data.length > 0) {
       finalInvestments = invRes.data.map(mapInvestmentFromDb);
     } else if (fallbackInvestments.length > 0) {
@@ -504,9 +504,9 @@ export const fetchAllFromSupabase = async () => {
     }
 
     return {
-      transactions: txRes.data ? txRes.data.map(mapTransactionFromDb) : null,
-      dreams: cleanDreams.length > 0 || (dreamRes.data && dreamRes.data.length === 0) ? cleanDreams : null,
-      monthlyNeeds: needRes.data ? needRes.data.map(mapMonthlyNeedFromDb) : null,
+      transactions: txRes.data ? txRes.data.map(mapTransactionFromDb) : [],
+      dreams: cleanDreams,
+      monthlyNeeds: needRes.data ? needRes.data.map(mapMonthlyNeedFromDb) : [],
       investments: finalInvestments,
       debts: fallbackDebts
     };

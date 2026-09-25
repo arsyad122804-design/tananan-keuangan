@@ -50,42 +50,7 @@ const INITIAL_MONTHLY_NEEDS = [];
 const INITIAL_DREAMS = [];
 const INITIAL_TRANSACTIONS = [];
 const INITIAL_DEBTS = [];
-
-const INITIAL_INVESTMENTS = [
-  {
-    id: 'inv_emtek',
-    namaSaham: 'EMTEK',
-    modalInvestasi: 916999,
-    tanggalBeli: '2026-09-24',
-    status: 'HOLDING',
-    profitLossType: 'NONE',
-    nominalProfitLoss: 0,
-    totalKembali: 0,
-    keterangan: 'Saham EMTK'
-  },
-  {
-    id: 'inv_spacex',
-    namaSaham: 'SPACE X',
-    modalInvestasi: 1211539,
-    tanggalBeli: '2026-09-24',
-    status: 'HOLDING',
-    profitLossType: 'NONE',
-    nominalProfitLoss: 0,
-    totalKembali: 0,
-    keterangan: 'Saham Space X'
-  },
-  {
-    id: 'inv_tpia',
-    namaSaham: 'TPIA',
-    modalInvestasi: 967999,
-    tanggalBeli: '2026-09-24',
-    status: 'HOLDING',
-    profitLossType: 'NONE',
-    nominalProfitLoss: 0,
-    totalKembali: 0,
-    keterangan: 'Saham TPIA'
-  }
-];
+const INITIAL_INVESTMENTS = [];
 
 export const sortTransactionsDesc = (list) => {
   if (!Array.isArray(list)) return [];
@@ -191,55 +156,25 @@ export default function App() {
       const cloudData = await fetchAllFromSupabase();
       if (cloudData) {
         setDbStatus('CONNECTED');
-        if (cloudData.transactions && cloudData.transactions.length > 0) {
-          setTransactions((prevLocal) => {
-            const map = new Map();
-            (cloudData.transactions || []).forEach((t) => { if (t && t.id) map.set(String(t.id), t); });
-            (prevLocal || []).forEach((t) => { if (t && t.id) map.set(String(t.id), t); });
-            const merged = Array.from(map.values());
-            localStorage.setItem('tatanan_uang_transactions', JSON.stringify(merged));
-            return sortTransactionsDesc(merged);
-          });
+        if (Array.isArray(cloudData.transactions)) {
+          setTransactions(sortTransactionsDesc(cloudData.transactions));
+          localStorage.setItem('tatanan_uang_transactions', JSON.stringify(cloudData.transactions));
         }
-        if (cloudData.dreams && cloudData.dreams.length > 0) {
-          setDreams((prevLocal) => {
-            const map = new Map();
-            (cloudData.dreams || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
-            (prevLocal || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
-            const merged = Array.from(map.values());
-            localStorage.setItem('tatanan_uang_dreams', JSON.stringify(merged));
-            return merged;
-          });
+        if (Array.isArray(cloudData.dreams)) {
+          setDreams(cloudData.dreams);
+          localStorage.setItem('tatanan_uang_dreams', JSON.stringify(cloudData.dreams));
         }
-        if (cloudData.monthlyNeeds && cloudData.monthlyNeeds.length > 0) {
-          setMonthlyNeeds((prevLocal) => {
-            const map = new Map();
-            (cloudData.monthlyNeeds || []).forEach((n) => { if (n && n.id) map.set(String(n.id), n); });
-            (prevLocal || []).forEach((n) => { if (n && n.id) map.set(String(n.id), n); });
-            const merged = Array.from(map.values());
-            localStorage.setItem('tatanan_uang_monthly_needs', JSON.stringify(merged));
-            return merged;
-          });
+        if (Array.isArray(cloudData.monthlyNeeds)) {
+          setMonthlyNeeds(cloudData.monthlyNeeds);
+          localStorage.setItem('tatanan_uang_monthly_needs', JSON.stringify(cloudData.monthlyNeeds));
         }
-        if (cloudData.debts && cloudData.debts.length > 0) {
-          setDebts((prevLocal) => {
-            const map = new Map();
-            (cloudData.debts || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
-            (prevLocal || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
-            const merged = Array.from(map.values());
-            localStorage.setItem('tatanan_uang_debts', JSON.stringify(merged));
-            return merged;
-          });
+        if (Array.isArray(cloudData.debts)) {
+          setDebts(cloudData.debts);
+          localStorage.setItem('tatanan_uang_debts', JSON.stringify(cloudData.debts));
         }
-        if (cloudData.investments && cloudData.investments.length > 0) {
-          setInvestments((prevLocal) => {
-            const map = new Map();
-            (cloudData.investments || []).forEach((inv) => { if (inv && inv.id) map.set(String(inv.id), inv); });
-            (prevLocal || []).forEach((inv) => { if (inv && inv.id) map.set(String(inv.id), inv); });
-            const merged = Array.from(map.values());
-            localStorage.setItem('tatanan_uang_investments', JSON.stringify(merged));
-            return merged;
-          });
+        if (Array.isArray(cloudData.investments)) {
+          setInvestments(cloudData.investments);
+          localStorage.setItem('tatanan_uang_investments', JSON.stringify(cloudData.investments));
         }
         if (!silent) {
           showTemporaryToast('Data tersinkronisasi realtime dari Cloud! ☁️');
