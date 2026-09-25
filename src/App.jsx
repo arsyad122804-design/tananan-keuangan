@@ -10,7 +10,8 @@ import {
   PieChart,
   DollarSign,
   ShoppingBag,
-  CreditCard
+  CreditCard,
+  Download
 } from 'lucide-react';
 import LiveClock from './components/LiveClock';
 import StatCards from './components/StatCards';
@@ -1438,7 +1439,17 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Download/Install App Button for Mobile */}
+            <button
+              onClick={handleOpenInstall}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 text-slate-950 font-black text-[11px] shadow-md shadow-emerald-500/25 active:scale-95 transition shrink-0 cursor-pointer"
+              title="Download & Pasang Aplikasi ke Layar HP"
+            >
+              <Download className="w-3.5 h-3.5 stroke-[3]" />
+              <span>Download</span>
+            </button>
+
             {/* Database Cloud Status Pill for Mobile - KHUSUS FIKRI */}
             {isMasterAdmin && (
               <button
@@ -1466,6 +1477,34 @@ export default function App() {
             </button>
           </div>
         </div>
+
+        {/* Mobile Install App Quick Banner */}
+        {!isInstalled && (
+          <div className="lg:hidden mb-5 bg-gradient-to-r from-emerald-950/70 via-slate-900 to-teal-950/70 border border-emerald-500/40 p-3.5 rounded-2xl flex items-center justify-between gap-3 shadow-xl">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 shrink-0 shadow-md shadow-emerald-500/30 font-black text-lg">
+                📲
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-xs font-black text-white truncate flex items-center gap-1.5">
+                  <span>Pasang Aplikasi ke Layar HP</span>
+                  <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold border border-emerald-500/30">PWA</span>
+                </h4>
+                <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                  Akses instan tanpa browser, offline & cepat!
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleOpenInstall}
+              className="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 text-slate-950 font-black rounded-xl text-xs shadow-lg shadow-emerald-500/25 active:scale-95 transition flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5 stroke-[3]" />
+              <span>Install</span>
+            </button>
+          </div>
+        )}
 
         {activeTab === 'CATATAN' && (
           /* LAYER 1: Catatan Keuangan, Jam & Stat Cards */
