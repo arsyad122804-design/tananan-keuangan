@@ -105,53 +105,91 @@ export default function DreamTracker({
       </div>
 
       {/* Header Controls */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
-        <div>
-          <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
-            <Target className="w-4 h-4 animate-bounce" />
-            <span>Target & Impian Keuangan Masa Depan</span>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+        <div className="flex items-center justify-between w-full md:w-auto gap-3">
+          <div>
+            <div className="flex items-center gap-1.5 text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
+              <Target className="w-4 h-4 text-amber-400" />
+              <span>Target & Impian Masa Depan</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black text-white flex flex-wrap items-center gap-2">
+              <span>Daftar Impian Saya</span>
+              <span className="text-xs bg-amber-500/15 text-amber-300 font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30 whitespace-nowrap shrink-0 inline-flex items-center font-mono">
+                ✨ {completedCount}/{dreams.length} Tercapai
+              </span>
+            </h2>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-white flex flex-wrap items-center gap-2">
-            <span>Daftar Impian Saya</span>
-            <span className="text-xs bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-500/30 whitespace-nowrap shrink-0 inline-flex items-center font-mono">
-              {completedCount}/{dreams.length} Tercapai
-            </span>
-          </h2>
+
+          {/* Add Dream Button for Mobile Header */}
+          <button
+            onClick={onAddNew}
+            className="md:hidden px-3.5 py-2 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-slate-950 font-black rounded-xl shadow-lg shadow-amber-500/20 active:scale-95 transition flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>Tambah</span>
+          </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          {/* Filter Tabs */}
-          <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 text-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+          {/* Segmented Filter Tabs */}
+          <div className="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto text-xs">
             <button
               onClick={() => setFilter('ALL')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition ${
-                filter === 'ALL' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+              className={`whitespace-nowrap py-2 px-3 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
+                filter === 'ALL'
+                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
               }`}
             >
-              Semua ({dreams.length})
+              <span>Semua</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
+                  filter === 'ALL' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-slate-900 text-slate-400'
+                }`}
+              >
+                {dreams.length}
+              </span>
             </button>
             <button
               onClick={() => setFilter('IN_PROGRESS')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition ${
-                filter === 'IN_PROGRESS' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+              className={`whitespace-nowrap py-2 px-3 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
+                filter === 'IN_PROGRESS'
+                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
               }`}
             >
-              Proses Sisanya ({dreams.length - completedCount})
+              <span>Berjalan</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
+                  filter === 'IN_PROGRESS' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-slate-900 text-slate-400'
+                }`}
+              >
+                {dreams.length - completedCount}
+              </span>
             </button>
             <button
               onClick={() => setFilter('COMPLETED')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition ${
-                filter === 'COMPLETED' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+              className={`whitespace-nowrap py-2 px-3 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
+                filter === 'COMPLETED'
+                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
               }`}
             >
-              Full Tercapai ({completedCount})
+              <span>Tercapai</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
+                  filter === 'COMPLETED' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-slate-900 text-slate-400'
+                }`}
+              >
+                {completedCount}
+              </span>
             </button>
           </div>
 
-          {/* Add Dream Button */}
+          {/* Add Dream Button for Desktop */}
           <button
             onClick={onAddNew}
-            className="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-bold rounded-xl shadow-lg shadow-amber-500/20 hover:scale-105 transition flex items-center gap-1.5 text-xs sm:text-sm"
+            className="hidden md:flex px-4 py-2.5 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-slate-950 font-black rounded-xl shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition items-center gap-1.5 text-xs sm:text-sm whitespace-nowrap shrink-0"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>Tambah Impian</span>

@@ -175,30 +175,57 @@ export default function MonthlyNeedTracker({
 
       {/* 4. Filter & Search Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
-        <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 text-xs">
+        <div className="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto text-xs">
           <button
             onClick={() => setFilter('ALL')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition ${
-              filter === 'ALL' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+            className={`whitespace-nowrap py-2 px-3 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
+              filter === 'ALL'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
             }`}
           >
-            Semua ({monthlyNeeds.length})
+            <span>Semua</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
+                filter === 'ALL' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-slate-900 text-slate-400'
+              }`}
+            >
+              {monthlyNeeds.length}
+            </span>
           </button>
           <button
             onClick={() => setFilter('UNPAID')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition ${
-              filter === 'UNPAID' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+            className={`whitespace-nowrap py-2 px-3 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
+              filter === 'UNPAID'
+                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
             }`}
           >
-            Belum Bayar ({unpaidNeeds.length})
+            <span>Belum</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
+                filter === 'UNPAID' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-slate-900 text-slate-400'
+              }`}
+            >
+              {unpaidNeeds.length}
+            </span>
           </button>
           <button
             onClick={() => setFilter('PAID')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition ${
-              filter === 'PAID' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+            className={`whitespace-nowrap py-2 px-3 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
+              filter === 'PAID'
+                ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
             }`}
           >
-            Sudah Bayar ({paidNeeds.length})
+            <span>Sudah</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
+                filter === 'PAID' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-slate-900 text-slate-400'
+              }`}
+            >
+              {paidNeeds.length}
+            </span>
           </button>
         </div>
 
@@ -207,7 +234,7 @@ export default function MonthlyNeedTracker({
           placeholder="Cari kebutuhan bulanan..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition sm:w-60"
+          className="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition sm:w-60"
         />
       </div>
 
