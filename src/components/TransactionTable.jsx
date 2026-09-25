@@ -44,68 +44,76 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onAdd
   return (
     <div id="transaction-section" className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden my-6 pb-12 md:pb-0">
       {/* Table Header Controls */}
-      <div className="p-4 sm:p-5 border-b border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <h3 className="text-lg sm:text-xl font-bold text-white flex flex-wrap items-center gap-2">
-            <span>Catatan Keuangan & Saham</span>
-            <span className="text-xs bg-slate-800 text-emerald-400 px-2.5 py-0.5 rounded-full border border-slate-700 font-mono whitespace-nowrap shrink-0 inline-flex items-center">
-              {sorted.length} Data
-            </span>
-          </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Dapat ditambah, diedit, dan diperbarui secara interaktif
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          {/* Search Bar */}
-          <div className="relative flex-1 sm:w-64">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Cari kebutuhan..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700/80 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-            />
+      <div className="p-4 sm:p-5 border-b border-slate-800 space-y-4">
+        {/* Top Row: Title + Add Button */}
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-lg sm:text-xl font-black text-white flex flex-wrap items-center gap-2">
+              <span>Catatan Keuangan & Saham</span>
+              <span className="text-xs bg-emerald-500/15 text-emerald-300 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30 font-mono whitespace-nowrap shrink-0 inline-flex items-center">
+                📊 {sorted.length} Data
+              </span>
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Dapat ditambah, diedit, dan diperbarui secara interaktif
+            </p>
           </div>
-
-          {/* Month Filter */}
-          {months.length > 0 && (
-            <div className="relative">
-              <select
-                value={filterMonth}
-                onChange={(e) => setFilterMonth(e.target.value)}
-                className="bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 appearance-none pr-8 cursor-pointer"
-              >
-                <option value="ALL">Semua Bulan</option>
-                {months.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-              <Filter className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            </div>
-          )}
-
-          {/* Sort Button */}
-          <button
-            onClick={() => setSortAsc(!sortAsc)}
-            className="p-2 bg-slate-950 border border-slate-700/80 rounded-xl text-slate-300 hover:text-white hover:border-emerald-500 transition flex items-center gap-1 text-xs font-medium"
-            title="Urutkan Tanggal"
-          >
-            <ArrowUpDown className="w-4 h-4 text-emerald-400" />
-          </button>
 
           {/* Add New Button */}
           <button
             onClick={onAddNew}
-            className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center gap-1.5 text-xs sm:text-sm"
+            className="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition flex items-center gap-1.5 text-xs sm:text-sm whitespace-nowrap shrink-0"
           >
-            <Plus className="w-4 h-4" />
-            <span>Tambah Catatan</span>
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span className="hidden sm:inline">Tambah Catatan</span>
+            <span className="sm:hidden">Tambah</span>
           </button>
+        </div>
+
+        {/* Search & Filter Row */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari transaksi, kebutuhan, atau keterangan..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Month Filter */}
+            {months.length > 0 && (
+              <div className="relative flex-1 sm:flex-none">
+                <select
+                  value={filterMonth}
+                  onChange={(e) => setFilterMonth(e.target.value)}
+                  className="w-full sm:w-auto bg-slate-950 border border-slate-800 rounded-xl pl-3 pr-8 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer"
+                >
+                  <option value="ALL">Semua Bulan</option>
+                  {months.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+                <Filter className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
+            )}
+
+            {/* Sort Button */}
+            <button
+              onClick={() => setSortAsc(!sortAsc)}
+              className="p-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-300 hover:text-emerald-400 hover:border-emerald-500/50 transition flex items-center gap-1.5 text-xs font-medium shrink-0"
+              title="Urutkan Tanggal"
+            >
+              <ArrowUpDown className="w-4 h-4 text-emerald-400" />
+              <span className="hidden sm:inline font-mono">{sortAsc ? 'Terlama' : 'Terbaru'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -119,31 +127,33 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onAdd
           sorted.map((item, index) => (
             <div
               key={item.id || index}
-              className="bg-slate-950/90 border border-slate-800 rounded-xl p-4 space-y-3 relative overflow-hidden"
+              className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 space-y-3 relative overflow-hidden"
             >
               {/* Card Top Header */}
-              <div className="flex items-start justify-between gap-2 border-b border-slate-800/80 pb-2.5">
-                <div>
-                  <span className="text-[11px] font-semibold text-emerald-400 block mb-0.5">
-                    {formatDateFull(item.tanggal)}
-                  </span>
-                  <h4 className="text-sm font-bold text-white">
+              <div className="flex items-start justify-between gap-2.5 border-b border-slate-800/80 pb-2.5">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[11px] font-bold text-emerald-400 font-mono bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                      {formatDateFull(item.tanggal)}
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-extrabold text-white truncate">
                     {item.kebutuhan}
                   </h4>
                 </div>
                 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 p-1 rounded-lg">
+                <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 p-1 rounded-xl shrink-0">
                   <button
                     onClick={() => onEdit(item)}
-                    className="p-1.5 text-slate-400 hover:text-emerald-400 transition"
+                    className="p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-lg transition"
                     title="Edit"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => onDelete(item.id)}
-                    className="p-1.5 text-slate-400 hover:text-red-400 transition"
+                    className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition"
                     title="Hapus"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
