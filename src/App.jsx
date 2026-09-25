@@ -871,46 +871,47 @@ export default function App() {
         <div className="space-y-5">
           {/* Brand Logo */}
           <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
-            <div className="w-11 h-11 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center text-slate-950 shadow-lg shadow-emerald-500/20">
-              <TrendingUp className="w-6 h-6 font-extrabold" />
+            <div className="relative group shrink-0">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-2xl blur-xs opacity-50"></div>
+              <div className="relative w-11 h-11 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center text-slate-950 shadow-lg shadow-emerald-500/20">
+                <TrendingUp className="w-6 h-6 stroke-[2.5]" />
+              </div>
             </div>
             <div>
-              <h1 className="text-lg font-extrabold tracking-tight text-white leading-none">
+              <h1 className="text-lg font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-300 leading-none">
                 TATANAN UANG
               </h1>
-              <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider block mt-1">
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block mt-1">
                 Dashboard Keuangan
               </span>
             </div>
           </div>
 
           {/* User Profile Card */}
-          <div className="bg-slate-950/80 border border-slate-800 p-3 rounded-2xl flex items-center justify-between gap-2.5">
+          <div className="bg-slate-950/90 border border-slate-800/90 p-3.5 rounded-2xl flex items-center justify-between gap-2.5 shadow-md">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center shrink-0 border border-emerald-500/20">
                 {isMasterAdmin ? (
-                  <Crown className="w-4 h-4 text-amber-400" />
+                  <Crown className="w-4 h-4 text-amber-400 fill-amber-400/20" />
                 ) : (
                   <User className="w-4 h-4 text-emerald-400" />
                 )}
               </div>
               <div className="min-w-0">
-                <span className="text-xs font-bold text-white truncate block">
-                  {currentUser.namaLengkap || currentUser.username}
+                <span className="text-xs font-extrabold text-white truncate block">
+                  {currentUser.namaLengkap ? currentUser.namaLengkap.replace(' (Master Admin)', '') : currentUser.username}
                 </span>
                 <button
                   type="button"
                   onClick={handleToggleInvestorMode}
                   title="Klik untuk ganti mode Investor / Reguler"
-                  className={`text-[9px] px-2 py-0.5 rounded font-semibold inline-flex items-center gap-1 mt-0.5 transition hover:scale-105 cursor-pointer border ${
-                    isMasterAdmin
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                      : isInvestor
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                      : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+                  className={`text-[10px] px-2 py-0.5 rounded-md font-bold inline-flex items-center gap-1 mt-1 transition-all hover:scale-105 active:scale-95 cursor-pointer border ${
+                    isInvestor
+                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                      : 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
                   }`}
                 >
-                  <span>{isMasterAdmin ? '👑 Master' : ''}</span>
+                  {isMasterAdmin && <span className="text-amber-400">👑</span>}
                   <span>{isInvestor ? '📈 Mode Investor' : '💵 Mode Reguler'}</span>
                 </button>
               </div>
@@ -918,7 +919,7 @@ export default function App() {
 
             <button
               onClick={handleLogout}
-              className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-xl transition"
+              className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 rounded-xl bg-slate-900 border border-slate-800 transition"
               title="Keluar dari akun"
             >
               <LogOut className="w-4 h-4" />
@@ -1064,29 +1065,56 @@ export default function App() {
       {/* 2. MAIN CONTENT AREA (Offset by lg:pl-72 for Laptop Sidebar) */}
       <main className="flex-1 lg:pl-72 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Mobile Header Top Bar (Brand, User Info & Database Status) */}
-        <div className="lg:hidden flex items-center justify-between pb-4 mb-2 border-b border-slate-800/80">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center text-slate-950 shadow-md shrink-0">
-              <TrendingUp className="w-4 h-4 font-extrabold" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-sm font-extrabold text-white leading-none truncate">TATANAN UANG</h1>
-                {isMasterAdmin && <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+        <div className="lg:hidden flex items-center justify-between pb-3.5 mb-4 border-b border-slate-800/80">
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Glossy Brand Icon */}
+            <div className="relative group shrink-0">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-2xl blur-xs opacity-50"></div>
+              <div className="relative w-10 h-10 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center text-slate-950 shadow-md shadow-emerald-500/20">
+                <TrendingUp className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <button
-                type="button"
-                onClick={handleToggleInvestorMode}
-                className={`text-[9px] px-2 py-0.5 rounded font-semibold inline-flex items-center gap-1 mt-0.5 border ${
-                  isInvestor
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                    : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
-                }`}
-                title="Sentuh untuk ganti Mode Investor / Reguler"
-              >
-                <span>{currentUser.namaLengkap || currentUser.username}</span>
-                <span>({isInvestor ? '📈 Investor' : '💵 Reguler'})</span>
-              </button>
+            </div>
+
+            <div className="min-w-0">
+              {/* App Brand Title */}
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-sm sm:text-base font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-300 leading-none truncate">
+                  TATANAN UANG
+                </h1>
+                {isMasterAdmin && (
+                  <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20 shrink-0 animate-pulse" />
+                )}
+              </div>
+
+              {/* User Name & Mode Toggle Badges */}
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="text-[10px] font-bold text-slate-300 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-md truncate max-w-[120px]">
+                  {currentUser.namaLengkap ? currentUser.namaLengkap.replace(' (Master Admin)', '') : currentUser.username}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={handleToggleInvestorMode}
+                  className={`text-[10px] px-2 py-0.5 rounded-md font-bold inline-flex items-center gap-1 border transition-all active:scale-95 cursor-pointer shadow-sm ${
+                    isInvestor
+                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                      : 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
+                  }`}
+                  title="Sentuh untuk ganti Mode Investor / Reguler"
+                >
+                  {isInvestor ? (
+                    <>
+                      <TrendingUp className="w-3 h-3 text-emerald-400" />
+                      <span>Investor</span>
+                    </>
+                  ) : (
+                    <>
+                      <Wallet className="w-3 h-3 text-cyan-400" />
+                      <span>Reguler</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1095,7 +1123,7 @@ export default function App() {
             {isMasterAdmin && (
               <button
                 onClick={() => setIsDbModalOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-[11px] font-semibold text-slate-300 hover:border-slate-700 transition"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-semibold text-slate-300 hover:border-slate-700 transition shadow-sm"
               >
                 <Database className="w-3.5 h-3.5 text-emerald-400" />
                 {dbStatus === 'CONNECTED' ? (
@@ -1111,7 +1139,7 @@ export default function App() {
 
             <button
               onClick={handleLogout}
-              className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg bg-slate-900 border border-slate-800 transition"
+              className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 rounded-xl bg-slate-900 border border-slate-800 transition"
               title="Keluar"
             >
               <LogOut className="w-4 h-4" />
