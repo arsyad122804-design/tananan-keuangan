@@ -35,23 +35,22 @@ export default function LiveClock({ onDayChange }) {
       <div className="absolute -top-10 -right-10 w-36 h-36 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
       <div className="absolute -bottom-10 -left-10 w-36 h-36 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
-        <div>
-          <div className="flex items-center gap-2 text-emerald-400 font-semibold text-xs uppercase tracking-wider mb-1">
-            <Sparkles className="w-4 h-4 animate-pulse" />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 relative z-10">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-xs uppercase tracking-wider mb-1">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
             <span>Waktu Real-Time System</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
-            <span>{hari}</span>
-            <span className="text-slate-400 font-normal">,</span>
-            <span className="text-emerald-300">{tanggal} {bulan} {tahun}</span>
+          <h2 className="text-base sm:text-2xl lg:text-3xl font-black text-white flex items-center gap-1.5 whitespace-nowrap leading-tight tracking-wide">
+            <span>{hari},</span>
+            <span className="text-emerald-300 font-extrabold">{tanggal} {bulan} {tahun}</span>
           </h2>
         </div>
 
-        <div className="flex items-center gap-3 bg-slate-950/70 border border-slate-800 px-4 py-2.5 rounded-xl shadow-inner backdrop-blur-md">
-          <Clock className="w-5 h-5 text-emerald-400 animate-spin-slow" />
-          <div className="font-mono text-xl sm:text-2xl font-bold tracking-widest text-emerald-400">
-            {hours}:<span className="text-white">{minutes}</span>:<span className="text-emerald-500 text-lg">{seconds}</span>
+        <div className="flex items-center gap-2.5 bg-slate-950/80 border border-slate-800/90 px-3.5 py-2 rounded-xl shadow-inner backdrop-blur-md shrink-0">
+          <Clock className="w-4 h-4 text-emerald-400" />
+          <div className="font-mono text-lg sm:text-2xl font-black tracking-widest text-emerald-400 whitespace-nowrap">
+            {hours}:<span className="text-white">{minutes}</span>:<span className="text-emerald-500 text-sm sm:text-lg">{seconds}</span>
           </div>
         </div>
       </div>
