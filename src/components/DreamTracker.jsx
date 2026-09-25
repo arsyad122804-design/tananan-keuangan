@@ -211,18 +211,17 @@ export default function DreamTracker({
             return (
               <div
                 key={item.id}
-                className={`bg-slate-950 border rounded-2xl p-5 shadow-lg relative overflow-hidden transition-all group ${
+                className={`border rounded-2xl p-5 shadow-xl relative overflow-hidden transition-all flex flex-col justify-between ${
                   item.isCompleted
-                    ? 'border-emerald-500/60 bg-emerald-950/10'
+                    ? 'border-emerald-500/50 bg-slate-950/90 shadow-emerald-950/20'
                     : isFull
-                    ? 'border-amber-500/80 bg-amber-950/10 shadow-amber-500/10'
-                    : 'border-slate-800 hover:border-amber-500/50'
+                    ? 'border-amber-500/60 bg-slate-950/90 shadow-amber-950/20'
+                    : 'border-slate-800 bg-slate-950/90 hover:border-amber-500/40 hover:shadow-lg'
                 }`}
               >
-                {/* Top Header: Row 1 (Name & Actions), Row 2 (Clean Status & Duration Badges) */}
-                <div className="space-y-2.5 mb-3.5">
-                  {/* Row 1: Checklist Button, Dream Name, and Action Buttons */}
-                  <div className="flex items-center justify-between gap-2">
+                <div>
+                  {/* 1. Header Row: Checkbox + Title on Left, Action Toolbar on Right */}
+                  <div className="flex items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800/80">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       {/* Ceklis Button / Toggle Impian Tercapai */}
                       <button
@@ -232,12 +231,12 @@ export default function DreamTracker({
                           }
                         }}
                         disabled={!isFull && !item.isCompleted}
-                        className={`p-1.5 rounded-xl transition flex items-center justify-center shrink-0 ${
+                        className={`p-2 rounded-xl transition flex items-center justify-center shrink-0 ${
                           item.isCompleted
-                            ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-md shadow-emerald-500/20'
+                            ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-md shadow-emerald-500/20 cursor-pointer'
                             : isFull
                             ? 'bg-amber-400 text-slate-950 hover:bg-amber-300 animate-bounce shadow-md shadow-amber-500/30 cursor-pointer'
-                            : 'bg-slate-950 border border-slate-800/80 text-slate-600 opacity-40 cursor-not-allowed'
+                            : 'bg-slate-900 border border-slate-800 text-slate-600 opacity-40 cursor-not-allowed'
                         }`}
                         title={
                           item.isCompleted
@@ -248,25 +247,33 @@ export default function DreamTracker({
                         }
                       >
                         {item.isCompleted ? (
-                          <CheckCircle2 className="w-5 h-5 stroke-[3]" />
+                          <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
                         ) : (
                           <Circle className="w-5 h-5" />
                         )}
                       </button>
 
-                      <h3 className={`text-base font-bold truncate ${item.isCompleted ? 'line-through text-slate-400' : 'text-white'}`}>
-                        {item.namaImpian}
-                      </h3>
+                      {/* Title */}
+                      <div className="min-w-0 flex-1">
+                        <h3
+                          className={`text-base sm:text-lg font-extrabold truncate leading-tight tracking-wide ${
+                            item.isCompleted ? 'line-through text-slate-400 font-medium' : 'text-white'
+                          }`}
+                          title={item.namaImpian}
+                        >
+                          {item.namaImpian}
+                        </h3>
+                      </div>
                     </div>
 
-                    {/* Actions & Priority Reorder Buttons */}
-                    <div className="flex items-center gap-0.5 shrink-0 bg-slate-900/90 border border-slate-800 p-1 rounded-xl">
+                    {/* Actions & Priority Reorder Toolbar */}
+                    <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800/90 rounded-xl p-1 shrink-0">
                       {onMoveUp && onMoveDown && !item.isCompleted && (
                         <>
                           <button
                             onClick={() => onMoveUp(item.originalIndex)}
                             disabled={item.originalIndex === 0}
-                            className="p-1 text-slate-400 hover:text-white disabled:opacity-25 transition"
+                            className="p-1 text-slate-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed rounded-lg hover:bg-slate-800 transition"
                             title="Naikkan Prioritas"
                           >
                             <ArrowUp className="w-3.5 h-3.5" />
@@ -274,24 +281,24 @@ export default function DreamTracker({
                           <button
                             onClick={() => onMoveDown(item.originalIndex)}
                             disabled={item.originalIndex === dreams.length - 1}
-                            className="p-1 text-slate-400 hover:text-white disabled:opacity-25 transition"
+                            className="p-1 text-slate-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed rounded-lg hover:bg-slate-800 transition"
                             title="Turunkan Prioritas"
                           >
                             <ArrowDown className="w-3.5 h-3.5" />
                           </button>
-                          <div className="w-px h-3.5 bg-slate-800 mx-0.5" />
+                          <div className="w-[1px] h-3.5 bg-slate-800 mx-0.5" />
                         </>
                       )}
                       <button
                         onClick={() => onEdit(item)}
-                        className="p-1 text-slate-400 hover:text-amber-400 rounded transition"
+                        className="p-1 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-lg transition"
                         title="Edit Impian"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => onDelete(item.id)}
-                        className="p-1 text-slate-400 hover:text-red-400 rounded transition"
+                        className="p-1 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition"
                         title="Hapus Impian"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -299,94 +306,102 @@ export default function DreamTracker({
                     </div>
                   </div>
 
-                  {/* Row 2: Clean Status Pill & Jangka Waktu Badge (No Squishing / No Clutter) */}
-                  <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-900/80">
+                  {/* 2. Sub-Row: Status Pill & Jangka Waktu Badges */}
+                  <div className="flex flex-wrap items-center gap-2 mt-3 mb-3">
                     {item.isCompleted ? (
-                      <span className="bg-emerald-500/20 text-emerald-300 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-emerald-500/40 inline-flex items-center gap-1.5 whitespace-nowrap">
-                        <PartyPopper className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span className="whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 text-[11px] font-bold bg-emerald-500/15 text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                        <PartyPopper className="w-3.5 h-3.5 text-emerald-400" />
                         <span>TERCAPAI (100%)</span>
                       </span>
                     ) : isFull ? (
-                      <span className="bg-amber-500/20 text-amber-300 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-amber-500/40 inline-flex items-center gap-1.5 animate-pulse whitespace-nowrap">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span className="whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 text-[11px] font-bold bg-amber-500/15 text-amber-300 px-2.5 py-1 rounded-lg border border-amber-500/30 shadow-sm shadow-amber-500/10">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
                         <span>DANA 100% FULL!</span>
                       </span>
                     ) : (
-                      <span className="bg-amber-500/10 text-amber-300 text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-amber-500/30 inline-flex items-center gap-1.5 whitespace-nowrap">
-                        <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span className="whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 text-[11px] font-bold bg-amber-500/15 text-amber-300 px-2.5 py-1 rounded-lg border border-amber-500/30">
+                        <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
                         <span>Dana Belum Cukup ({percentage}%)</span>
                       </span>
                     )}
 
-                    <span className="bg-slate-900 text-slate-300 text-[11px] font-medium px-2.5 py-1 rounded-lg border border-slate-800 inline-flex items-center gap-1.5 whitespace-nowrap">
-                      <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span>Jangka Waktu: <strong className="text-white font-semibold">{jangkaStr}</strong></span>
+                    <span className="whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 text-[11px] text-slate-300 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg">
+                      <Clock className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Jangka Waktu: <strong className="text-white font-bold">{jangkaStr}</strong></span>
                     </span>
                   </div>
+
+                  {/* 3. Progress Bar Section */}
+                  <div className="space-y-1.5 my-3">
+                    <div className="flex items-center justify-between text-xs font-semibold">
+                      <span className="text-slate-400">Progres Pengumpulan (Dari Dana Aset)</span>
+                      <span className={`font-mono font-black ${item.isCompleted || isFull ? 'text-emerald-400' : 'text-amber-400'}`}>
+                        {percentage}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden p-[2px] border border-slate-800">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          item.isCompleted
+                            ? 'bg-gradient-to-r from-emerald-500 to-teal-300 shadow-sm shadow-emerald-500/30'
+                            : isFull
+                            ? 'bg-gradient-to-r from-amber-400 to-emerald-400 shadow-sm shadow-amber-500/30'
+                            : 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300'
+                        }`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 4. Stats Detail Box */}
+                  <div className="grid grid-cols-2 gap-3 bg-slate-900/90 border border-slate-800 rounded-xl p-3 text-xs font-mono">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-sans font-semibold uppercase">Target Biaya</span>
+                      <span className="font-extrabold text-amber-400 text-sm sm:text-base">{formatRupiah(target)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-sans font-semibold uppercase">Terkumpul Dari Aset</span>
+                      <span className="font-extrabold text-emerald-400 text-sm sm:text-base">{formatRupiah(saved)}</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="space-y-1.5 my-3">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-400">Progres Pengumpulan (Dari Dana Aset)</span>
-                    <span className={item.isCompleted || isFull ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}>
-                      {percentage}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5 border border-slate-800">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        item.isCompleted
-                          ? 'bg-gradient-to-r from-emerald-500 to-teal-300 shadow-md shadow-emerald-500/30'
-                          : isFull
-                          ? 'bg-gradient-to-r from-amber-400 to-emerald-400 shadow-md shadow-amber-500/30'
-                          : 'bg-gradient-to-r from-amber-500 to-yellow-400'
-                      }`}
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* Amount details */}
-                <div className="grid grid-cols-2 gap-2 bg-slate-900/60 p-3 rounded-xl text-xs font-mono border border-slate-800/80">
-                  <div>
-                    <span className="text-[10px] text-slate-400 block font-sans">Target Biaya</span>
-                    <span className="font-bold text-amber-400">{formatRupiah(target)}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 block font-sans">Terkumpul Diri Aset</span>
-                    <span className="font-bold text-emerald-400">{formatRupiah(saved)}</span>
-                  </div>
-                </div>
-
-                {/* Status indicator */}
+                {/* 5. Bottom Status / Deficit Banner */}
                 {item.isCompleted ? (
-                  <div className="mt-3 pt-2.5 border-t border-slate-800/60 text-[11px] text-emerald-400 flex items-center justify-between font-medium">
-                    <span>🎉 Impian Tercapai & Dikunci!</span>
-                    <span className="text-[10px] bg-emerald-500/10 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/20">
-                      Sisa dana kekayaan bergulir ke impian sisanya
+                  <div className="mt-3.5 pt-3 border-t border-slate-800/80 text-[11px] text-emerald-400 flex items-center justify-between font-medium">
+                    <span className="flex items-center gap-1.5 font-bold">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      Impian Tercapai & Dikunci!
+                    </span>
+                    <span className="text-[10px] bg-emerald-500/15 text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-500/25">
+                      Sisa dana kekayaan bergulir otomatis
                     </span>
                   </div>
                 ) : isFull ? (
-                  <div className="mt-3 pt-2.5 border-t border-slate-800/60 text-[11px] text-amber-300 flex items-center justify-between font-medium animate-pulse">
-                    <span>✨ Dana Impian Sudah Full 100%!</span>
+                  <div className="mt-3.5 pt-3 border-t border-slate-800/80 text-[11px] text-amber-300 flex items-center justify-between font-medium">
+                    <span className="font-bold flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                      Dana Impian Sudah Full 100%!
+                    </span>
                     <button
                       onClick={() => onToggleComplete(item.id)}
-                      className="text-[10px] bg-amber-500 text-slate-950 px-2.5 py-1 rounded-lg font-bold hover:bg-amber-400 transition"
+                      className="text-xs bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 px-3 py-1.5 rounded-xl font-bold hover:scale-105 transition shadow-md shadow-amber-500/20"
                     >
-                      Klik Ceklis Sekarang
+                      Klik Ceklis Tercapai
                     </button>
                   </div>
                 ) : (
-                  <div className="mt-3 pt-2.5 border-t border-slate-800/60 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 font-medium">
-                    <div className="flex items-center gap-1.5 text-amber-400">
-                      <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span>Dana Anda belum mencukupi <strong className="text-amber-300 font-mono">(Kurang {formatRupiah(remaining)})</strong></span>
+                  <div className="mt-3.5 pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-1.5 text-amber-300 font-semibold">
+                      <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span>
+                        Dana Anda belum mencukupi <strong className="text-amber-200 font-mono font-bold whitespace-nowrap">(Kurang {formatRupiah(remaining)})</strong>
+                      </span>
                     </div>
                     {monthlyEstimate > 0 && (
-                      <div className="text-slate-400 font-normal text-[10px]">
-                        Estimasi: <span className="font-mono font-bold text-amber-300">{formatRupiah(monthlyEstimate)}/bln</span>
-                      </div>
+                      <span className="text-[11px] text-slate-400 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg font-mono shrink-0 self-start sm:self-auto">
+                        Estimasi: <strong className="text-amber-300 font-bold">{formatRupiah(monthlyEstimate)}/bln</strong>
+                      </span>
                     )}
                   </div>
                 )}
