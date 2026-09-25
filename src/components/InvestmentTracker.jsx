@@ -99,10 +99,11 @@ export default function InvestmentTracker({
 
             <button
               onClick={onAddNew}
-              className="flex-1 md:flex-none px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-slate-950 font-bold rounded-xl shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 text-xs sm:text-sm shrink-0"
+              className="flex-1 md:flex-none px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-slate-950 font-black rounded-xl shadow-lg shadow-blue-500/20 active:scale-95 transition flex items-center justify-center gap-1.5 text-xs sm:text-sm shrink-0 whitespace-nowrap"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
-              <span>Beli / Catat Saham Baru</span>
+              <span className="hidden sm:inline">Beli / Catat Saham Baru</span>
+              <span className="sm:hidden">Beli Saham</span>
             </button>
           </div>
         </div>
@@ -163,33 +164,47 @@ export default function InvestmentTracker({
       </div>
 
       {/* 2. Controls & Sub Tabs */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
-        {/* Sub Tabs Toggle */}
-        <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
+        {/* Segmented Sub Tabs */}
+        <div className="grid grid-cols-2 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto text-xs">
           <button
             type="button"
             onClick={() => setActiveSubTab('ACTIVE')}
-            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+            className={`whitespace-nowrap py-2 px-3 sm:px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
               activeSubTab === 'ACTIVE'
                 ? 'bg-blue-500 text-slate-950 shadow-md shadow-blue-500/20'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
             }`}
           >
-            <Clock className="w-3.5 h-3.5" />
-            <span>Saham Aktif / Holding ({activeHoldings.length})</span>
+            <Clock className="w-3.5 h-3.5 shrink-0" />
+            <span>Saham Aktif</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
+                activeSubTab === 'ACTIVE' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-slate-900 text-slate-400'
+              }`}
+            >
+              {activeHoldings.length}
+            </span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveSubTab('HISTORY')}
-            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+            className={`whitespace-nowrap py-2 px-3 sm:px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
               activeSubTab === 'HISTORY'
                 ? 'bg-blue-500 text-slate-950 shadow-md shadow-blue-500/20'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
             }`}
           >
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Riwayat Realisasi / Dijual ({closedTrades.length})</span>
+            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+            <span>Riwayat Jual</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
+                activeSubTab === 'HISTORY' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-slate-900 text-slate-400'
+              }`}
+            >
+              {closedTrades.length}
+            </span>
           </button>
         </div>
 
@@ -202,7 +217,7 @@ export default function InvestmentTracker({
               placeholder="Cari kode saham (cth: BBCA)..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700/80 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
             />
           </div>
 

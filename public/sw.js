@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tatanan-uang-v9';
+const CACHE_NAME = 'tatanan-uang-v10';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
