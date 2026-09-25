@@ -146,7 +146,6 @@ export default function App() {
     showTemporaryToast(`Mode diubah: ${nextInvestor ? '📈 Mode Investor (Saham Aktif)' : '💵 Mode Reguler (Non-Saham)'}`);
   };
 
-  // Check Supabase connection and initial sync on mount
   // Reusable Cloud Sync function with safe merging so local additions never get lost
   const refreshDataFromCloud = async (silent = true) => {
     try {
@@ -157,24 +156,54 @@ export default function App() {
       if (cloudData) {
         setDbStatus('CONNECTED');
         if (Array.isArray(cloudData.transactions)) {
-          setTransactions(sortTransactionsDesc(cloudData.transactions));
-          localStorage.setItem('tatanan_uang_transactions', JSON.stringify(cloudData.transactions));
+          setTransactions((prevLocal) => {
+            const map = new Map();
+            (cloudData.transactions || []).forEach((t) => { if (t && t.id) map.set(String(t.id), t); });
+            (prevLocal || []).forEach((t) => { if (t && t.id) map.set(String(t.id), t); });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_transactions', JSON.stringify(merged));
+            return sortTransactionsDesc(merged);
+          });
         }
         if (Array.isArray(cloudData.dreams)) {
-          setDreams(cloudData.dreams);
-          localStorage.setItem('tatanan_uang_dreams', JSON.stringify(cloudData.dreams));
+          setDreams((prevLocal) => {
+            const map = new Map();
+            (cloudData.dreams || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
+            (prevLocal || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_dreams', JSON.stringify(merged));
+            return merged;
+          });
         }
         if (Array.isArray(cloudData.monthlyNeeds)) {
-          setMonthlyNeeds(cloudData.monthlyNeeds);
-          localStorage.setItem('tatanan_uang_monthly_needs', JSON.stringify(cloudData.monthlyNeeds));
+          setMonthlyNeeds((prevLocal) => {
+            const map = new Map();
+            (cloudData.monthlyNeeds || []).forEach((n) => { if (n && n.id) map.set(String(n.id), n); });
+            (prevLocal || []).forEach((n) => { if (n && n.id) map.set(String(n.id), n); });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_monthly_needs', JSON.stringify(merged));
+            return merged;
+          });
         }
         if (Array.isArray(cloudData.debts)) {
-          setDebts(cloudData.debts);
-          localStorage.setItem('tatanan_uang_debts', JSON.stringify(cloudData.debts));
+          setDebts((prevLocal) => {
+            const map = new Map();
+            (cloudData.debts || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
+            (prevLocal || []).forEach((d) => { if (d && d.id) map.set(String(d.id), d); });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_debts', JSON.stringify(merged));
+            return merged;
+          });
         }
         if (Array.isArray(cloudData.investments)) {
-          setInvestments(cloudData.investments);
-          localStorage.setItem('tatanan_uang_investments', JSON.stringify(cloudData.investments));
+          setInvestments((prevLocal) => {
+            const map = new Map();
+            (cloudData.investments || []).forEach((i) => { if (i && i.id) map.set(String(i.id), i); });
+            (prevLocal || []).forEach((i) => { if (i && i.id) map.set(String(i.id), i); });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_investments', JSON.stringify(merged));
+            return merged;
+          });
         }
         if (!silent) {
           showTemporaryToast('Data tersinkronisasi realtime dari Cloud! ☁️');
@@ -187,6 +216,8 @@ export default function App() {
 
   // Check Supabase connection and initial sync + Realtime Listener on mount
   useEffect(() => {
+    let syncTimer = null;
+
     const initDatabase = async () => {
       const config = getSupabaseConfig();
       if (config.url && config.anonKey) {
@@ -215,7 +246,7 @@ export default function App() {
     window.addEventListener('focus', handleVisibilityOrFocus);
     document.addEventListener('visibilitychange', handleVisibilityOrFocus);
 
-    // Supabase Realtime Channel Subscription for live cross-device sync
+    // Supabase Realtime Channel Subscription for live cross-device sync with debouncing
     const client = getSupabaseClient();
     let channel = null;
     if (client) {
@@ -223,7 +254,10 @@ export default function App() {
         channel = client
           .channel('realtime_app_sync')
           .on('postgres_changes', { event: '*', schema: 'public' }, () => {
-            refreshDataFromCloud(true);
+            if (syncTimer) clearTimeout(syncTimer);
+            syncTimer = setTimeout(() => {
+              refreshDataFromCloud(true);
+            }, 1500);
           })
           .subscribe();
       } catch (err) {
@@ -232,6 +266,7 @@ export default function App() {
     }
 
     return () => {
+      if (syncTimer) clearTimeout(syncTimer);
       window.removeEventListener('focus', handleVisibilityOrFocus);
       document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
       if (channel && client) {
