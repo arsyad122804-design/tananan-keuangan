@@ -439,17 +439,23 @@ export const fetchAllFromSupabase = async () => {
       client.from('investments').select('*').order('created_at', { ascending: false })
     ]);
 
-    // Separate real dreams from fallback investments stored in dreams table
+    // Separate real dreams from fallback investments & debts stored in dreams table
     let cleanDreams = [];
     const fallbackInvestments = [];
+    const fallbackDebts = [];
 
     if (dreamRes.data && Array.isArray(dreamRes.data)) {
       dreamRes.data.forEach((row) => {
-        const isInv = String(row.id || '').startsWith('inv_') || String(row.keterangan || '').startsWith('TATANAN_INV:');
+        const rowId = String(row.id || '');
+        const rowKet = String(row.keterangan || '');
+
+        const isInv = rowId.startsWith('inv_') || rowKet.startsWith('TATANAN_INV:');
+        const isDebt = rowId.startsWith('debt_') || rowKet.startsWith('TATANAN_DEBT:');
+
         if (isInv) {
           try {
-            if (row.keterangan && row.keterangan.startsWith('TATANAN_INV:')) {
-              const parsed = JSON.parse(row.keterangan.replace('TATANAN_INV:', ''));
+            if (rowKet.startsWith('TATANAN_INV:')) {
+              const parsed = JSON.parse(rowKet.replace('TATANAN_INV:', ''));
               fallbackInvestments.push(parsed);
             } else {
               fallbackInvestments.push({
@@ -466,6 +472,23 @@ export const fetchAllFromSupabase = async () => {
             }
           } catch (e) {
             console.error('Error parsing fallback investment from dream row:', e);
+          }
+        } else if (isDebt) {
+          try {
+            if (rowKet.startsWith('TATANAN_DEBT:')) {
+              const parsed = JSON.parse(rowKet.replace('TATANAN_DEBT:', ''));
+              fallbackDebts.push(parsed);
+            } else {
+              fallbackDebts.push({
+                id: row.id,
+                namaUtang: row.nama_impian || 'UTANG',
+                nominalUtang: Number(row.target_biaya) || 0,
+                jatuhTempo: '',
+                keterangan: row.keterangan || ''
+              });
+            }
+          } catch (e) {
+            console.error('Error parsing fallback debt from dream row:', e);
           }
         } else {
           cleanDreams.push(mapDreamFromDb(row));
@@ -484,7 +507,8 @@ export const fetchAllFromSupabase = async () => {
       transactions: txRes.data ? txRes.data.map(mapTransactionFromDb) : null,
       dreams: cleanDreams.length > 0 || (dreamRes.data && dreamRes.data.length === 0) ? cleanDreams : null,
       monthlyNeeds: needRes.data ? needRes.data.map(mapMonthlyNeedFromDb) : null,
-      investments: finalInvestments
+      investments: finalInvestments,
+      debts: fallbackDebts
     };
   } catch (err) {
     console.error('Error fetching data from Supabase:', err);
@@ -497,6 +521,28 @@ export const syncItemToSupabase = async (table, item, action = 'upsert') => {
   if (!client) return;
 
   try {
+    if (table === 'debts') {
+      const debtId = String(item.id || item);
+      const dreamFallbackId = debtId.startsWith('debt_') ? debtId : 'debt_' + debtId;
+
+      if (action === 'delete') {
+        await client.from('dreams').delete().eq('id', dreamFallbackId);
+      } else {
+        const dreamFallbackPayload = {
+          id: dreamFallbackId,
+          nama_impian: String(item.namaUtang || 'UTANG').toUpperCase().trim(),
+          target_biaya: Number(item.nominalUtang) || 0,
+          terkumpul: 0,
+          jangka_nilai: 1,
+          jangka_satuan: 'UTANG',
+          is_completed: false,
+          keterangan: 'TATANAN_DEBT:' + JSON.stringify(item)
+        };
+        await client.from('dreams').upsert(dreamFallbackPayload);
+      }
+      return;
+    }
+
     if (table === 'investments') {
       const invId = String(item.id || item);
       const dreamFallbackId = invId.startsWith('inv_') ? invId : 'inv_' + invId;

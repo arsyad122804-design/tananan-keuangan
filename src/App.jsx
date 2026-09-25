@@ -9,7 +9,8 @@ import {
   Wallet,
   PieChart,
   DollarSign,
-  ShoppingBag
+  ShoppingBag,
+  CreditCard
 } from 'lucide-react';
 import LiveClock from './components/LiveClock';
 import StatCards from './components/StatCards';
@@ -24,6 +25,8 @@ import MonthlyNeedTracker from './components/MonthlyNeedTracker';
 import MonthlyNeedModal from './components/MonthlyNeedModal';
 import InvestmentTracker from './components/InvestmentTracker';
 import InvestmentModal from './components/InvestmentModal';
+import DebtTracker from './components/DebtTracker';
+import DebtModal from './components/DebtModal';
 import DatabaseConfigModal from './components/DatabaseConfigModal';
 import AuthScreen from './components/AuthScreen';
 import { exportToExcel } from './utils/excelExport';
@@ -45,6 +48,7 @@ import {
 const INITIAL_MONTHLY_NEEDS = [];
 const INITIAL_DREAMS = [];
 const INITIAL_TRANSACTIONS = [];
+const INITIAL_DEBTS = [];
 
 const INITIAL_INVESTMENTS = [
   {
@@ -115,6 +119,11 @@ export default function App() {
     return saved ? JSON.parse(saved) : INITIAL_MONTHLY_NEEDS;
   });
 
+  const [debts, setDebts] = useState(() => {
+    const saved = localStorage.getItem('tatanan_uang_debts');
+    return saved ? JSON.parse(saved) : INITIAL_DEBTS;
+  });
+
   const [investments, setInvestments] = useState(() => {
     const saved = localStorage.getItem('tatanan_uang_investments');
     if (saved) {
@@ -144,7 +153,7 @@ export default function App() {
     return INITIAL_INVESTMENTS;
   });
 
-  const [activeTab, setActiveTab] = useState('CATATAN'); // 'CATATAN' | 'INVESTASI' | 'KEBUTUHAN' | 'IMPIAN'
+  const [activeTab, setActiveTab] = useState('CATATAN'); // 'CATATAN' | 'INVESTASI' | 'KEBUTUHAN' | 'IMPIAN' | 'UTANG'
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isDreamModalOpen, setIsDreamModalOpen] = useState(false);
@@ -152,6 +161,8 @@ export default function App() {
   const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
   const [investmentModalMode, setInvestmentModalMode] = useState('NEW'); // 'NEW' | 'EDIT' | 'REALIZE'
   const [editingInvestment, setEditingInvestment] = useState(null);
+  const [isDebtModalOpen, setIsDebtModalOpen] = useState(false);
+  const [editingDebt, setEditingDebt] = useState(null);
   const [isDbModalOpen, setIsDbModalOpen] = useState(false);
   const [dbStatus, setDbStatus] = useState('LOCAL'); // 'LOCAL' | 'CONNECTED' | 'CONNECTING' | 'ERROR'
   const [editingItem, setEditingItem] = useState(null);
@@ -201,6 +212,9 @@ export default function App() {
         }
         if (cloudData.monthlyNeeds && cloudData.monthlyNeeds.length > 0) {
           setMonthlyNeeds(cloudData.monthlyNeeds);
+        }
+        if (cloudData.debts && cloudData.debts.length > 0) {
+          setDebts(cloudData.debts);
         }
         if (cloudData.investments && cloudData.investments.length > 0) {
           const updatedInv = cloudData.investments.map((inv) => {
@@ -307,6 +321,11 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('tatanan_uang_investments', JSON.stringify(investments));
   }, [investments]);
+
+  // Persist debts to LocalStorage whenever updated
+  useEffect(() => {
+    localStorage.setItem('tatanan_uang_debts', JSON.stringify(debts));
+  }, [debts]);
 
   // Monthly Needs Handlers
   const handleToggleNeedPaid = (id) => {
@@ -852,6 +871,154 @@ export default function App() {
     }
   };
 
+  // Debt Handlers
+  const handleSaveDebt = (formData) => {
+    if (editingDebt) {
+      const updated = { ...editingDebt, ...formData };
+      setDebts((prev) =>
+        prev.map((d) => (d.id === editingDebt.id ? updated : d))
+      );
+      syncItemToSupabase('debts', updated);
+      setEditingDebt(null);
+      showTemporaryToast('Catatan utang berhasil diperbarui! 💳');
+    } else {
+      const newDebt = {
+        id: 'debt_' + Date.now().toString(),
+        ...formData
+      };
+      setDebts((prev) => [...prev, newDebt]);
+      syncItemToSupabase('debts', newDebt);
+      showTemporaryToast('Daftar utang baru berhasil ditambahkan! 💳');
+    }
+  };
+
+  const handleEditDebt = (item) => {
+    setEditingDebt(item);
+    setIsDebtModalOpen(true);
+  };
+
+  const handleDeleteDebt = (id) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus catatan utang ini?')) {
+      setDebts((prev) => prev.filter((d) => d.id !== id));
+      syncItemToSupabase('debts', id, 'delete');
+      showTemporaryToast('Catatan utang dihapus');
+    }
+  };
+
+  const handleMoveDebtUp = (index) => {
+    if (index <= 0) return;
+    setDebts((prev) => {
+      const copy = [...prev];
+      const temp = copy[index - 1];
+      copy[index - 1] = copy[index];
+      copy[index] = temp;
+      return copy;
+    });
+  };
+
+  const handleMoveDebtDown = (index) => {
+    setDebts((prev) => {
+      if (index >= prev.length - 1) return prev;
+      const copy = [...prev];
+      const temp = copy[index + 1];
+      copy[index + 1] = copy[index];
+      copy[index] = temp;
+      return copy;
+    });
+  };
+
+  // Pay off debt flow: deduct from cash balance (pengeluaran) & auto-delete debt
+  const handlePayOffDebt = (debt) => {
+    const nominal = Number(debt.nominalUtang) || 0;
+    if (nominal <= 0) return;
+
+    if (!window.confirm(`Konfirmasi pelunasan utang "${debt.namaUtang}" sebesar ${formatRupiah(nominal)}?\n\nDana akan langsung dipotong dari saldo uang kas (Aset Kekayaan) dan utang otomatis terhapus lunas.`)) {
+      return;
+    }
+
+    // 1. Create deduction transaction in Catatan Keuangan
+    const newDuitDibawa = Math.max(0, currentDuitDibawa - nominal);
+    const payTx = {
+      id: Date.now().toString(),
+      tanggal: getTodayISOString(),
+      kebutuhan: `Pelunasan Utang: ${debt.namaUtang}`,
+      pemasukan: 0,
+      pengeluaran: nominal,
+      profitSaham: 0,
+      lossSaham: 0,
+      duitDibawa: newDuitDibawa,
+      duitSaham: currentDuitSaham
+    };
+
+    setTransactions((prev) => sortTransactionsDesc([payTx, ...prev]));
+    syncItemToSupabase('transactions', payTx);
+
+    // 2. Remove debt from debts list and cloud
+    setDebts((prev) => prev.filter((d) => d.id !== debt.id));
+    syncItemToSupabase('debts', debt.id, 'delete');
+
+    showTemporaryToast(`Alhamdulillah! Utang "${debt.namaUtang}" ${formatRupiah(nominal)} telah lunas & terhapus! 🎉`);
+  };
+
+  // Pay all affordable debts at once
+  const handlePayAllAffordableDebts = () => {
+    if (debts.length === 0) {
+      showTemporaryToast('Tidak ada daftar utang.');
+      return;
+    }
+
+    let available = Math.max(0, totalKekayaan - totalKebutuhanTerbayar - completedTargetSum);
+    const affordableDebts = [];
+    let tempAvail = available;
+
+    for (const d of debts) {
+      const nominal = Number(d.nominalUtang) || 0;
+      if (tempAvail >= nominal && nominal > 0) {
+        tempAvail -= nominal;
+        affordableDebts.push(d);
+      }
+    }
+
+    if (affordableDebts.length === 0) {
+      alert(`Sisa aset kekayaan Anda (${formatRupiah(available)}) belum mencukupi untuk melunasi utang.`);
+      return;
+    }
+
+    const totalBayar = affordableDebts.reduce((sum, d) => sum + (Number(d.nominalUtang) || 0), 0);
+    if (!window.confirm(`Lunasi ${affordableDebts.length} utang sekaligus senilai total ${formatRupiah(totalBayar)}?\n\nSaldo kas akan dipotong dan utang yang terbayar akan otomatis terhapus.`)) {
+      return;
+    }
+
+    // Deduct & create transactions
+    let runningCash = currentDuitDibawa;
+    const newTxs = [];
+    const idsToRemove = new Set(affordableDebts.map(d => d.id));
+
+    affordableDebts.forEach((d, idx) => {
+      const nominal = Number(d.nominalUtang) || 0;
+      runningCash = Math.max(0, runningCash - nominal);
+      const tx = {
+        id: (Date.now() + idx).toString(),
+        tanggal: getTodayISOString(),
+        kebutuhan: `Pelunasan Utang: ${d.namaUtang}`,
+        pemasukan: 0,
+        pengeluaran: nominal,
+        profitSaham: 0,
+        lossSaham: 0,
+        duitDibawa: runningCash,
+        duitSaham: currentDuitSaham
+      };
+      newTxs.push(tx);
+      syncItemToSupabase('transactions', tx);
+      syncItemToSupabase('debts', d.id, 'delete');
+    });
+
+    setTransactions((prev) => sortTransactionsDesc([...newTxs, ...prev]));
+    setDebts((prev) => prev.filter((d) => !idsToRemove.has(d.id)));
+
+    showTemporaryToast(`Sukses! ${affordableDebts.length} utang berhasil dilunasi & dihapus! 🎉`);
+  };
+
   if (!currentUser) {
     return <AuthScreen onLoginSuccess={(user) => setCurrentUser(user)} />;
   }
@@ -1000,6 +1167,24 @@ export default function App() {
               </div>
               <span className="text-[10px] bg-slate-950 px-2 py-0.5 rounded-full border border-slate-800 font-mono text-amber-300 whitespace-nowrap shrink-0 inline-flex items-center">
                 {dreams.filter((d) => d.isCompleted).length}/{dreams.length}
+              </span>
+            </button>
+
+            {/* Tab Pelunasan Utang */}
+            <button
+              onClick={() => setActiveTab('UTANG')}
+              className={`w-full px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold transition flex items-center justify-between gap-3 text-left ${
+                activeTab === 'UTANG'
+                  ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <CreditCard className="w-4 h-4 shrink-0" />
+                <span>Pelunasan Utang</span>
+              </div>
+              <span className="text-[10px] bg-slate-950 px-2 py-0.5 rounded-full border border-slate-800 font-mono text-rose-300 whitespace-nowrap shrink-0 inline-flex items-center">
+                {debts.length} Pos
               </span>
             </button>
           </div>
@@ -1230,6 +1415,30 @@ export default function App() {
             />
           </div>
         )}
+
+        {activeTab === 'UTANG' && (
+          /* LAYER 5: Pelunasan Utang dari Aset Kekayaan */
+          <div className="space-y-6">
+            <DebtTracker
+              debts={debts}
+              totalKekayaan={totalKekayaan}
+              currentDuitDibawa={currentDuitDibawa}
+              currentDuitSaham={currentDuitSaham}
+              totalKebutuhanTerbayar={totalKebutuhanTerbayar}
+              completedDreamsTarget={completedTargetSum}
+              onPayOffDebt={handlePayOffDebt}
+              onPayAllAffordable={handlePayAllAffordableDebts}
+              onEdit={handleEditDebt}
+              onDelete={handleDeleteDebt}
+              onAddNew={() => {
+                setEditingDebt(null);
+                setIsDebtModalOpen(true);
+              }}
+              onMoveUp={handleMoveDebtUp}
+              onMoveDown={handleMoveDebtDown}
+            />
+          </div>
+        )}
       </main>
 
       {/* Footer */}
@@ -1300,6 +1509,17 @@ export default function App() {
         initialData={editingDream}
       />
 
+      {/* Debt Modal (Add / Edit Utang) */}
+      <DebtModal
+        isOpen={isDebtModalOpen}
+        onClose={() => {
+          setIsDebtModalOpen(false);
+          setEditingDebt(null);
+        }}
+        onSave={handleSaveDebt}
+        initialData={editingDebt}
+      />
+
       {/* Database Cloud Configuration Modal - KHUSUS FIKRI */}
       {isMasterAdmin && (
         <DatabaseConfigModal
@@ -1337,6 +1557,9 @@ export default function App() {
           } else if (activeTab === 'IMPIAN') {
             setEditingDream(null);
             setIsDreamModalOpen(true);
+          } else if (activeTab === 'UTANG') {
+            setEditingDebt(null);
+            setIsDebtModalOpen(true);
           } else {
             setEditingItem(null);
             setIsModalOpen(true);
