@@ -1415,7 +1415,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={handleToggleInvestorMode}
-                  className={`text-[10px] px-2 py-0.5 rounded-md font-bold inline-flex items-center gap-1 border transition-all active:scale-95 cursor-pointer shadow-sm ${
+                  className={`text-[10px] px-2 py-0.5 rounded-md font-bold inline-flex items-center gap-1 border transition-all active:scale-95 cursor-pointer shadow-sm whitespace-nowrap shrink-0 ${
                     isInvestor
                       ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
                       : 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
@@ -1424,13 +1424,13 @@ export default function App() {
                 >
                   {isInvestor ? (
                     <>
-                      <TrendingUp className="w-3 h-3 text-emerald-400" />
-                      <span>Investor</span>
+                      <TrendingUp className="w-3 h-3 text-emerald-400 shrink-0" />
+                      <span className="whitespace-nowrap">Investor</span>
                     </>
                   ) : (
                     <>
-                      <Wallet className="w-3 h-3 text-cyan-400" />
-                      <span>Reguler</span>
+                      <Wallet className="w-3 h-3 text-cyan-400 shrink-0" />
+                      <span className="whitespace-nowrap">Reguler</span>
                     </>
                   )}
                 </button>
