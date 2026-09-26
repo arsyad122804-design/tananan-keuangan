@@ -1125,6 +1125,66 @@ export default function App() {
     });
   };
 
+  // Pay debt installment flow (partial / monthly installment)
+  const handlePayDebtInstallment = (debt, customAmount = null) => {
+    const sisaUtang = Number(debt.nominalUtang) || 0;
+    const cicilan = customAmount !== null ? Number(customAmount) : (Number(debt.cicilanBulanan) > 0 ? Number(debt.cicilanBulanan) : sisaUtang);
+    const nominalBayar = Math.min(sisaUtang, cicilan);
+
+    if (nominalBayar <= 0) return;
+
+    if (currentDuitDibawa < nominalBayar) {
+      alert(`Saldo Uang Kas / Duit Dibawa (${formatRupiah(currentDuitDibawa)}) belum mencukupi untuk membayar cicilan ${formatRupiah(nominalBayar)}.`);
+      return;
+    }
+
+    if (!window.confirm(`Bayar cicilan utang "${debt.namaUtang}" sebesar ${formatRupiah(nominalBayar)}?\n\nSaldo uang kas akan langsung dipotong dan sisa utang akan otomatis berkurang.`)) {
+      return;
+    }
+
+    const sisaSetelahBayar = Math.max(0, sisaUtang - nominalBayar);
+    const isFullyPaid = sisaSetelahBayar === 0;
+
+    // 1. Create deduction transaction in Catatan Keuangan
+    const newDuitDibawa = Math.max(0, currentDuitDibawa - nominalBayar);
+    const payTx = {
+      id: Date.now().toString(),
+      tanggal: getTodayISOString(),
+      kebutuhan: isFullyPaid
+        ? `Pelunasan Utang: ${debt.namaUtang} (Lunas)`
+        : `Cicilan Utang: ${debt.namaUtang} (Sisa: ${formatRupiah(sisaSetelahBayar)})`,
+      pemasukan: 0,
+      pengeluaran: nominalBayar,
+      profitSaham: 0,
+      lossSaham: 0,
+      duitDibawa: newDuitDibawa,
+      duitSaham: currentDuitSaham
+    };
+    removeDeletedId(payTx.id);
+
+    setTransactions((prev) => sortTransactionsDesc([payTx, ...prev]));
+    syncItemToSupabase('transactions', payTx);
+
+    // 2. Update atau Hapus Utang
+    if (isFullyPaid) {
+      addDeletedId(debt.id);
+      setDebts((prev) => prev.filter((d) => d.id !== debt.id));
+      syncItemToSupabase('debts', debt.id, 'delete');
+      showTemporaryToast(`🎉 Alhamdulillah! Utang "${debt.namaUtang}" telah LUNAS sepenuhnya!`);
+    } else {
+      const currentMonth = new Date().toISOString().substring(0, 7); // 'YYYY-MM'
+      const updatedDebt = {
+        ...debt,
+        nominalUtang: sisaSetelahBayar,
+        lastPaidMonth: currentMonth
+      };
+      removeDeletedId(updatedDebt.id);
+      setDebts((prev) => prev.map((d) => (d.id === debt.id ? updatedDebt : d)));
+      syncItemToSupabase('debts', updatedDebt);
+      showTemporaryToast(`✅ Cicilan ${formatRupiah(nominalBayar)} berhasil dibayar! Sisa utang: ${formatRupiah(sisaSetelahBayar)}`);
+    }
+  };
+
   // Pay off debt flow: deduct from cash balance (pengeluaran) & auto-delete debt
   const handlePayOffDebt = (debt) => {
     const nominal = Number(debt.nominalUtang) || 0;
@@ -1703,6 +1763,7 @@ export default function App() {
               totalKebutuhanTerbayar={totalKebutuhanTerbayar}
               completedDreamsTarget={completedTargetSum}
               onPayOffDebt={handlePayOffDebt}
+              onPayInstallment={handlePayDebtInstallment}
               onPayAllAffordable={handlePayAllAffordableDebts}
               onEdit={handleEditDebt}
               onDelete={handleDeleteDebt}
