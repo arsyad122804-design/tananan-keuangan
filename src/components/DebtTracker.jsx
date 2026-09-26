@@ -52,8 +52,11 @@ export default function DebtTracker({
 
   let activeWealthPool = sisaDanaBersih;
 
+  // Filter only active debts with remaining balance > 0 (paid debts automatically disappear)
+  const activeDebts = (debts || []).filter((d) => d && (Number(d.nominalUtang) || 0) > 0);
+
   // Process waterfall allocation for debts
-  const processedDebts = debts.map((item, index) => {
+  const processedDebts = activeDebts.map((item, index) => {
     const nominal = Number(item.nominalUtang) || 0;
     const allocated = Math.min(activeWealthPool, nominal);
     activeWealthPool = Math.max(0, activeWealthPool - allocated);
@@ -78,7 +81,7 @@ export default function DebtTracker({
     };
   });
 
-  const totalNominalUtang = debts.reduce((sum, d) => sum + (Number(d.nominalUtang) || 0), 0);
+  const totalNominalUtang = activeDebts.reduce((sum, d) => sum + (Number(d.nominalUtang) || 0), 0);
   const readyDebts = processedDebts.filter((d) => d.isReady);
   const unreadyDebts = processedDebts.filter((d) => !d.isReady);
 
