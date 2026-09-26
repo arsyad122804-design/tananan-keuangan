@@ -42,7 +42,11 @@ import {
   testSupabaseConnection,
   getCurrentSession,
   setCurrentSession,
-  DEFAULT_MASTER_USER
+  DEFAULT_MASTER_USER,
+  getDeletedIds,
+  addDeletedId,
+  removeDeletedId,
+  clearDeletedIds
 } from './lib/supabaseClient';
 
 // Initial default data
@@ -155,26 +159,123 @@ export default function App() {
       const cloudData = await fetchAllFromSupabase();
       if (cloudData) {
         setDbStatus('CONNECTED');
+        const deleted = getDeletedIds();
+
+        // 1. Transactions Smart Merge
         if (Array.isArray(cloudData.transactions)) {
-          setTransactions(sortTransactionsDesc(cloudData.transactions));
-          localStorage.setItem('tatanan_uang_transactions', JSON.stringify(cloudData.transactions));
+          setTransactions((prevLocal) => {
+            const map = new Map();
+            cloudData.transactions.forEach((t) => {
+              if (t && t.id && !deleted.has(String(t.id))) {
+                map.set(String(t.id), t);
+              }
+            });
+            (prevLocal || []).forEach((t) => {
+              if (t && t.id && !deleted.has(String(t.id))) {
+                if (!map.has(String(t.id))) {
+                  map.set(String(t.id), t);
+                  syncItemToSupabase('transactions', t);
+                }
+              }
+            });
+            const merged = sortTransactionsDesc(Array.from(map.values()));
+            localStorage.setItem('tatanan_uang_transactions', JSON.stringify(merged));
+            return merged;
+          });
         }
+
+        // 2. Dreams Smart Merge
         if (Array.isArray(cloudData.dreams)) {
-          setDreams(cloudData.dreams);
-          localStorage.setItem('tatanan_uang_dreams', JSON.stringify(cloudData.dreams));
+          setDreams((prevLocal) => {
+            const map = new Map();
+            cloudData.dreams.forEach((d) => {
+              if (d && d.id && !deleted.has(String(d.id))) {
+                map.set(String(d.id), d);
+              }
+            });
+            (prevLocal || []).forEach((d) => {
+              if (d && d.id && !deleted.has(String(d.id))) {
+                if (!map.has(String(d.id))) {
+                  map.set(String(d.id), d);
+                  syncItemToSupabase('dreams', d);
+                }
+              }
+            });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_dreams', JSON.stringify(merged));
+            return merged;
+          });
         }
+
+        // 3. Monthly Needs Smart Merge
         if (Array.isArray(cloudData.monthlyNeeds)) {
-          setMonthlyNeeds(cloudData.monthlyNeeds);
-          localStorage.setItem('tatanan_uang_monthly_needs', JSON.stringify(cloudData.monthlyNeeds));
+          setMonthlyNeeds((prevLocal) => {
+            const map = new Map();
+            cloudData.monthlyNeeds.forEach((n) => {
+              if (n && n.id && !deleted.has(String(n.id))) {
+                map.set(String(n.id), n);
+              }
+            });
+            (prevLocal || []).forEach((n) => {
+              if (n && n.id && !deleted.has(String(n.id))) {
+                if (!map.has(String(n.id))) {
+                  map.set(String(n.id), n);
+                  syncItemToSupabase('monthly_needs', n);
+                }
+              }
+            });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_monthly_needs', JSON.stringify(merged));
+            return merged;
+          });
         }
+
+        // 4. Debts Smart Merge
         if (Array.isArray(cloudData.debts)) {
-          setDebts(cloudData.debts);
-          localStorage.setItem('tatanan_uang_debts', JSON.stringify(cloudData.debts));
+          setDebts((prevLocal) => {
+            const map = new Map();
+            cloudData.debts.forEach((d) => {
+              if (d && d.id && !deleted.has(String(d.id))) {
+                map.set(String(d.id), d);
+              }
+            });
+            (prevLocal || []).forEach((d) => {
+              if (d && d.id && !deleted.has(String(d.id))) {
+                if (!map.has(String(d.id))) {
+                  map.set(String(d.id), d);
+                  syncItemToSupabase('debts', d);
+                }
+              }
+            });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_debts', JSON.stringify(merged));
+            return merged;
+          });
         }
+
+        // 5. Investments Smart Merge
         if (Array.isArray(cloudData.investments)) {
-          setInvestments(cloudData.investments);
-          localStorage.setItem('tatanan_uang_investments', JSON.stringify(cloudData.investments));
+          setInvestments((prevLocal) => {
+            const map = new Map();
+            cloudData.investments.forEach((i) => {
+              if (i && i.id && !deleted.has(String(i.id))) {
+                map.set(String(i.id), i);
+              }
+            });
+            (prevLocal || []).forEach((i) => {
+              if (i && i.id && !deleted.has(String(i.id))) {
+                if (!map.has(String(i.id))) {
+                  map.set(String(i.id), i);
+                  syncItemToSupabase('investments', i);
+                }
+              }
+            });
+            const merged = Array.from(map.values());
+            localStorage.setItem('tatanan_uang_investments', JSON.stringify(merged));
+            return merged;
+          });
         }
+
         if (!silent) {
           showTemporaryToast('Data tersinkronisasi realtime dari Cloud! ☁️');
         }
@@ -299,6 +400,7 @@ export default function App() {
   const handleSaveNeed = (formData) => {
     if (editingNeed) {
       const updated = { ...editingNeed, ...formData };
+      removeDeletedId(updated.id);
       setMonthlyNeeds((prev) =>
         prev.map((n) => (n.id === editingNeed.id ? updated : n))
       );
@@ -310,6 +412,7 @@ export default function App() {
         id: 'n_' + Date.now().toString(),
         ...formData
       };
+      removeDeletedId(newNeed.id);
       setMonthlyNeeds((prev) => [...prev, newNeed]);
       syncItemToSupabase('monthly_needs', newNeed);
       showTemporaryToast('Kebutuhan Bulanan Baru Ditambahkan! 🎯');
@@ -323,6 +426,7 @@ export default function App() {
 
   const handleDeleteNeed = (id) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus pos kebutuhan bulanan ini?')) {
+      addDeletedId(id);
       setMonthlyNeeds((prev) => prev.filter((n) => n.id !== id));
       syncItemToSupabase('monthly_needs', id, 'delete');
       showTemporaryToast('Kebutuhan Bulanan Dihapus');
@@ -428,6 +532,7 @@ export default function App() {
   const handleSaveDream = (formData) => {
     if (editingDream) {
       const updated = { ...editingDream, ...formData };
+      removeDeletedId(updated.id);
       setDreams((prev) =>
         prev.map((d) => (d.id === editingDream.id ? updated : d))
       );
@@ -439,6 +544,7 @@ export default function App() {
         isCompleted: false,
         ...formData
       };
+      removeDeletedId(newDream.id);
       setDreams((prev) => [...prev, newDream]);
       syncItemToSupabase('dreams', newDream);
     }
@@ -451,6 +557,7 @@ export default function App() {
 
   const handleDeleteDream = (id) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus target impian ini?')) {
+      addDeletedId(id);
       setDreams((prev) => prev.filter((d) => d.id !== id));
       syncItemToSupabase('dreams', id, 'delete');
     }
@@ -479,7 +586,9 @@ export default function App() {
 
   const currentDuitDibawa = latestItem && latestItem.duitDibawa !== undefined ? Number(latestItem.duitDibawa) || 0 : 0;
   const currentDuitSaham = latestItem && latestItem.duitSaham !== undefined ? Number(latestItem.duitSaham) || 0 : 0;
-  const totalKekayaan = currentDuitDibawa + (isInvestor ? currentDuitSaham : 0);
+  // Effective portfolio wealth: if currentDuitSaham is 0 (or less than totalInvestedModal), we account for totalInvestedModal so active stocks are counted
+  const effectiveDuitSaham = Math.max(currentDuitSaham, totalInvestedModal);
+  const totalKekayaan = currentDuitDibawa + (isInvestor ? effectiveDuitSaham : 0);
 
   // Calculate monthly needs totals
   const totalKebutuhanNominal = monthlyNeeds.reduce((sum, n) => sum + (Number(n.nominal) || 0), 0);
@@ -503,7 +612,7 @@ export default function App() {
   const fullSummary = {
     ...summary,
     duitDibawa: currentDuitDibawa,
-    duitSaham: currentDuitSaham,
+    duitSaham: effectiveDuitSaham,
     totalKekayaan,
     totalDreamTarget,
     totalDreamTerkumpul,
@@ -517,6 +626,7 @@ export default function App() {
 
     if (editingItem) {
       const updated = { ...editingItem, ...cleanForm };
+      removeDeletedId(updated.id);
       setTransactions((prev) =>
         prev.map((t) => (t.id === editingItem.id ? updated : t))
       );
@@ -527,6 +637,7 @@ export default function App() {
         id: Date.now().toString(),
         ...cleanForm
       };
+      removeDeletedId(newItem.id);
       setTransactions((prev) => [newItem, ...prev]);
       syncItemToSupabase('transactions', newItem);
 
@@ -590,7 +701,10 @@ export default function App() {
             }
 
             // Sync updated dreams to Supabase
-            updated.forEach((d) => syncItemToSupabase('dreams', d));
+            updated.forEach((d) => {
+              removeDeletedId(d.id);
+              syncItemToSupabase('dreams', d);
+            });
           }
           return updated;
         });
@@ -606,6 +720,7 @@ export default function App() {
 
   const handleDelete = (id) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus catatan ini?')) {
+      addDeletedId(id);
       setTransactions((prev) => prev.filter((t) => t.id !== id));
       syncItemToSupabase('transactions', id, 'delete');
     }
@@ -613,6 +728,7 @@ export default function App() {
 
   const handleResetSampleData = () => {
     if (window.confirm('Reset data ke contoh awal?')) {
+      clearDeletedIds();
       setTransactions(INITIAL_TRANSACTIONS);
     }
   };
@@ -713,6 +829,7 @@ export default function App() {
         status: 'CLOSED',
         totalKembali
       };
+      removeDeletedId(updatedInv.id);
 
       setInvestments((prev) =>
         prev.map((i) => (i.id === formData.id ? updatedInv : i))
@@ -731,6 +848,7 @@ export default function App() {
         duitDibawa: currentDuitDibawa,
         duitSaham: currentDuitSaham + totalKembali
       };
+      removeDeletedId(newTx.id);
 
       setTransactions((prev) => sortTransactionsDesc([newTx, ...prev]));
       syncItemToSupabase('transactions', newTx);
@@ -750,6 +868,7 @@ export default function App() {
         modalInvestasi: newTotalModal,
         keterangan: formData.keterangan || editingInvestment.keterangan
       };
+      removeDeletedId(updated.id);
 
       setInvestments((prev) =>
         prev.map((i) => (i.id === editingInvestment.id ? updated : i))
@@ -770,6 +889,7 @@ export default function App() {
           duitDibawa: currentDuitDibawa,
           duitSaham: Math.max(0, currentDuitSaham - topUpNominal)
         };
+        removeDeletedId(topUpTx.id);
         setTransactions((prev) => sortTransactionsDesc([topUpTx, ...prev]));
         syncItemToSupabase('transactions', topUpTx);
       }
@@ -782,6 +902,7 @@ export default function App() {
       const modalDiff = newModal - oldModal;
 
       const updated = { ...editingInvestment, ...formData };
+      removeDeletedId(updated.id);
       setInvestments((prev) =>
         prev.map((i) => (i.id === editingInvestment.id ? updated : i))
       );
@@ -801,6 +922,7 @@ export default function App() {
           duitDibawa: currentDuitDibawa,
           duitSaham: Math.max(0, currentDuitSaham - modalDiff)
         };
+        removeDeletedId(addTx.id);
         setTransactions((prev) => sortTransactionsDesc([addTx, ...prev]));
         syncItemToSupabase('transactions', addTx);
         showTemporaryToast(`Modal saham ${formData.namaSaham} bertambah +${formatRupiah(modalDiff)} (Total: ${formatRupiah(newModal)})! 📈`);
@@ -823,6 +945,7 @@ export default function App() {
           modalInvestasi: newTotal,
           keterangan: formData.keterangan || existingHolding.keterangan
         };
+        removeDeletedId(updated.id);
 
         setInvestments((prev) =>
           prev.map((i) => (i.id === existingHolding.id ? updated : i))
@@ -841,6 +964,7 @@ export default function App() {
             duitDibawa: currentDuitDibawa,
             duitSaham: Math.max(0, currentDuitSaham - modal)
           };
+          removeDeletedId(buyTx.id);
           setTransactions((prev) => sortTransactionsDesc([buyTx, ...prev]));
           syncItemToSupabase('transactions', buyTx);
         }
@@ -855,6 +979,7 @@ export default function App() {
           totalKembali: 0,
           ...formData
         };
+        removeDeletedId(newInv.id);
         setInvestments((prev) => [newInv, ...prev]);
         syncItemToSupabase('investments', newInv);
 
@@ -870,6 +995,7 @@ export default function App() {
             duitDibawa: currentDuitDibawa,
             duitSaham: Math.max(0, currentDuitSaham - modal)
           };
+          removeDeletedId(buyTx.id);
           setTransactions((prev) => sortTransactionsDesc([buyTx, ...prev]));
           syncItemToSupabase('transactions', buyTx);
         }
@@ -899,6 +1025,7 @@ export default function App() {
 
   const handleDeleteInvestment = (id) => {
     if (window.confirm('Hapus catatan saham ini dari daftar portofolio?')) {
+      addDeletedId(id);
       setInvestments((prev) => prev.filter((i) => i.id !== id));
       syncItemToSupabase('investments', id, 'delete');
       showTemporaryToast('Catatan saham dihapus');
@@ -910,6 +1037,7 @@ export default function App() {
       const closed = investments.filter((i) => i.status === 'CLOSED');
       setInvestments((prev) => prev.filter((i) => i.status !== 'CLOSED'));
       closed.forEach((item) => {
+        addDeletedId(item.id);
         syncItemToSupabase('investments', item.id, 'delete');
       });
       showTemporaryToast('Semua riwayat penjualan saham berhasil dikosongkan! 🗑️');
@@ -931,6 +1059,7 @@ export default function App() {
       duitDibawa: currentDuitDibawa,
       duitSaham: currentDuitSaham + nominal
     };
+    removeDeletedId(newTx.id);
 
     setTransactions((prev) => sortTransactionsDesc([newTx, ...prev]));
     syncItemToSupabase('transactions', newTx);
@@ -941,6 +1070,7 @@ export default function App() {
   const handleSaveDebt = (formData) => {
     if (editingDebt) {
       const updated = { ...editingDebt, ...formData };
+      removeDeletedId(updated.id);
       setDebts((prev) =>
         prev.map((d) => (d.id === editingDebt.id ? updated : d))
       );
@@ -952,6 +1082,7 @@ export default function App() {
         id: 'debt_' + Date.now().toString(),
         ...formData
       };
+      removeDeletedId(newDebt.id);
       setDebts((prev) => [...prev, newDebt]);
       syncItemToSupabase('debts', newDebt);
       showTemporaryToast('Daftar utang baru berhasil ditambahkan! 💳');
@@ -965,6 +1096,7 @@ export default function App() {
 
   const handleDeleteDebt = (id) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus catatan utang ini?')) {
+      addDeletedId(id);
       setDebts((prev) => prev.filter((d) => d.id !== id));
       syncItemToSupabase('debts', id, 'delete');
       showTemporaryToast('Catatan utang dihapus');
@@ -1015,6 +1147,8 @@ export default function App() {
       duitDibawa: newDuitDibawa,
       duitSaham: currentDuitSaham
     };
+    removeDeletedId(payTx.id);
+    addDeletedId(debt.id);
 
     setTransactions((prev) => sortTransactionsDesc([payTx, ...prev]));
     syncItemToSupabase('transactions', payTx);

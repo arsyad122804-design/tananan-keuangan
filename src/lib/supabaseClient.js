@@ -516,6 +516,55 @@ export const fetchAllFromSupabase = async () => {
   }
 };
 
+export const getDeletedIds = () => {
+  try {
+    const raw = localStorage.getItem('tatanan_uang_deleted_ids');
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw);
+    return new Set(Array.isArray(arr) ? arr.map(String) : []);
+  } catch {
+    return new Set();
+  }
+};
+
+export const addDeletedId = (id) => {
+  if (!id) return;
+  try {
+    const set = getDeletedIds();
+    set.add(String(id));
+    if (String(id).startsWith('inv_')) {
+      set.add(String(id).replace('inv_', ''));
+    }
+    if (String(id).startsWith('debt_')) {
+      set.add(String(id).replace('debt_', ''));
+    }
+    localStorage.setItem('tatanan_uang_deleted_ids', JSON.stringify(Array.from(set)));
+  } catch (e) {
+    console.error('Error adding deleted id:', e);
+  }
+};
+
+export const removeDeletedId = (id) => {
+  if (!id) return;
+  try {
+    const set = getDeletedIds();
+    set.delete(String(id));
+    set.delete('inv_' + String(id));
+    set.delete('debt_' + String(id));
+    localStorage.setItem('tatanan_uang_deleted_ids', JSON.stringify(Array.from(set)));
+  } catch (e) {
+    console.error('Error removing deleted id:', e);
+  }
+};
+
+export const clearDeletedIds = () => {
+  try {
+    localStorage.removeItem('tatanan_uang_deleted_ids');
+  } catch (e) {
+    console.error('Error clearing deleted ids:', e);
+  }
+};
+
 export const syncItemToSupabase = async (table, item, action = 'upsert') => {
   const client = getSupabaseClient();
   if (!client) return;
@@ -526,7 +575,7 @@ export const syncItemToSupabase = async (table, item, action = 'upsert') => {
       const dreamFallbackId = debtId.startsWith('debt_') ? debtId : 'debt_' + debtId;
 
       if (action === 'delete') {
-        await client.from('dreams').delete().eq('id', dreamFallbackId);
+        await client.from('dreams').delete().in('id', [debtId, dreamFallbackId]);
       } else {
         const dreamFallbackPayload = {
           id: dreamFallbackId,
@@ -551,7 +600,7 @@ export const syncItemToSupabase = async (table, item, action = 'upsert') => {
         // Delete from investments table
         client.from('investments').delete().eq('id', invId).catch(() => {});
         // Also delete from fallback dreams table
-        await client.from('dreams').delete().eq('id', dreamFallbackId);
+        await client.from('dreams').delete().in('id', [invId, dreamFallbackId]);
       } else {
         // Upsert to investments table (if exists)
         const payload = mapInvestmentToDb(item);
@@ -590,4 +639,5 @@ export const syncItemToSupabase = async (table, item, action = 'upsert') => {
     console.error(`Error syncing ${action} to ${table}:`, err);
   }
 };
+
 
